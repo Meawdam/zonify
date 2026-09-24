@@ -1,0 +1,21 @@
+services:
+  mongodb:
+    image: mongo:8
+    container_name: zonify-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+  backend:
+    build: .
+    container_name: zonify-backend
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      - mongodb
+
+volumes:
+  mongodb_data:
