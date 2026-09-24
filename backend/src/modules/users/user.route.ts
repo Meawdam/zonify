@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { UserController } from "./controller/user.controller.js";
+import { authMiddleware } from "../../middlewares/auth.middleware.js";
 
 const router = Router()
 
@@ -23,6 +24,30 @@ const userController = new UserController();
  *                 $ref: '#/components/schemas/User'
  */
 router.get("/", userController.getAll);
+
+/**
+ * @swagger
+ * /api/users/me:
+ *   get:
+ *     summary: Get current authenticated user
+ *     tags:
+ *       - Users
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved current user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: User not found
+ */
+router.get("/me", authMiddleware, userController.getMe);
+router.get("/me", userController.getMe);
 
 /**
  * @swagger

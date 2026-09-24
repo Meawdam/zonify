@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 
 import type { CreateUserDto, LoginUserDto } from "../dto/user.dto.js";
 import { userRepository } from "../repository/user.repository.js";
+import { env } from "../../../config/env.js";
 
 export class UserService {
   private readonly userRepository: userRepository;
@@ -20,6 +21,16 @@ export class UserService {
 
     if (!user) {
       throw Error("User not found");
+    }
+
+    return user;
+  }
+
+  async getMe(id: string) {
+    const user = await this.userRepository.findById(id);
+
+    if(!user) {
+      throw new Error("User not found");
     }
 
     return user;
@@ -63,18 +74,12 @@ export class UserService {
         throw new Error("Invalid email or password");
     }
 
-    const jwtSecret = process.env.JWT_SECRET;
-
-    if(!jwtSecret) {
-        throw new Error("JWT_SECRET is not defined");
-    }
-
     const token = jwt.sign(
         {
             userId: user._id.toString(),
             email: user.email
         },
-        jwtSecret,
+        env.JWT_SECRET,
         {
             expiresIn: "1h"
         }

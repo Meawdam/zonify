@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { AuthRequest } from "../../../middlewares/auth.middleware.js"
 import { UserService } from "../service/user.service.js";
 import { createUserDto, loginUserDto } from "../dto/user.dto.js";
 
@@ -18,6 +19,26 @@ export class UserController {
       next(error);
     }
   };
+
+  getMe = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      if(!req.user) {
+        return res.status(401).json({
+          message: "Unauthorized"
+        });
+      }
+
+      const user = await this.userService.getMe(req.user.userId);
+
+      return res.status(200).json(user);
+    } catch (error) {
+      next(error);
+    }
+  }
 
   getById = async (req: Request, res: Response, next: NextFunction) => {
     try {

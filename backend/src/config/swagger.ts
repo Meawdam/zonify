@@ -58,7 +58,7 @@ const swaggerOptions: swaggerJSDoc.Options = {
             },
           },
         },
-        
+
         LoginUser: {
           type: "object",
           required: ["email", "password"],
@@ -84,6 +84,14 @@ const swaggerOptions: swaggerJSDoc.Options = {
               example: "User not found",
             },
           },
+        },
+      },
+
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
         },
       },
     },
