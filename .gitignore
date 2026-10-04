@@ -1,0 +1,4 @@
+# Local package cache and design previews
+/.pnpm-store/
+/design-backups/
+/zonify-*.png
