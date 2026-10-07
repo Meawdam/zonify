@@ -4,6 +4,6 @@ export const markets = [
   { id: "sunday", name: "กาดวันอาทิตย์", location: "เชียงใหม่", category: "craft", description: "ตลาดคนเดินกลางเมือง\nงานคราฟต์ ศิลปะ และของสะสม", price: 150, photo: "sunday" },
 ] as const;
 
-export const occupiedStalls = new Set(["B03", "C06", "D02"]);
+export const occupiedStalls = new Set(["A03", "B03", "B06", "C02", "D02"]);
 export const stallRows = ["A", "B", "C", "D"];
 export type Market = (typeof markets)[number];
