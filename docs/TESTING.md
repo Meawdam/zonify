@@ -1,4 +1,4 @@
-# Verification record — 2026-10-11
+# Verification record — 2026-10-11 to 2026-10-12
 
 ## Phase 1 and Phase 2
 
@@ -34,7 +34,7 @@ The live preview now uses the persistent zonify database, backend port 4000 and 
 
 ## Remaining verification
 
-Docker runtime, HTTPS cookie behavior through a real HTTPS proxy, backup/restore and final delivery checks remain for Phase 6. Human UAT and acceptance have not occurred and are not represented by automated tests.
+Phase 6 verification is recorded below. Human UAT and acceptance have not occurred and are not represented by automated tests.
 
 
 ## Phase 3
@@ -80,3 +80,18 @@ Backend build passed. Full isolated API suite passed 66 tests, zero failures (57
 Installed Chrome with Playwright used isolated zonify_browser_phase5. Desktop 1440×1000 and mobile 390×844 passed keyboard advertisement creation → public card/shop deep link → edit → mobile display → deactivation. Dashboard filters and totals passed; an injected 503 hid stale results and retry restored them. Manager booking CSV actually downloaded, finance controls were absent and direct finance calls returned 403. Owner selected monthly financial reports by keyboard and downloaded the expected CSV; customer report calls returned 403. Final workflow had no document overflow, framework overlay, unhandled runtime errors or console warnings. Desktop dashboard/public ads and mobile ads/owner-report screenshots were visually inspected.
 
 QA found that image preloading issued an unused-preload warning after resizing from desktop to mobile. The hero now uses eager loading with high fetch priority; the final browser run passed. Summary-tab navigation also clears unrelated catalog success notices. Synthetic received/refund records were confined to the isolated QA database; no money moved and no customer database financial history was seeded.
+
+## Phase 6 — final delivery checks
+
+Backend build passed; the complete API suite passed **71 tests, zero failures/skips** (66 previous + 4 backup/restore + 1 readiness). Frontend lint and production build passed with the same nine routes. Native output uses next start; Docker enables standalone output explicitly.
+
+- Standard MongoDB Database Tools 100.19.1 performed actual mongodump/mongorestore round trips in isolated databases. Dates/ObjectIds/password hashes/Thai text/price snapshots/private binary slip data and unique/partial indexes were preserved. Session data was excluded. Restoring the same target, overwriting a backup directory, a live API, missing maintenance acknowledgment, unsupported collections, malformed manifests and corrupt archive checksums were rejected. Two concurrent restores produced one success. Altered content metadata retained a guarded partial target and required a new name for retry.
+- A real backup of native persistent zonify was created at .data/backups/delivery-20261012-001 and restored to the separate zonify_restore_delivery_20261012_a01 database. All **10 application collections**, BSON content hashes, document counts and indexes matched. The original database was retained and unchanged; no sessions were restored. Backup files and credentials are ignored by Git.
+- Readiness test verified /health returns 503 before/after disconnect and 200 while connected without leaking configuration. Native API binds loopback by default; Docker uses 0.0.0.0 internally and publishes only host loopback.
+- Installed Chrome/Playwright ran the committed scripts/browser-qa.mjs against isolated zonify_system_browser_test over both HTTP and a real local HTTPS proxy. Desktop 1440×1000 and mobile 390×844: registration → login → reload → profile edit/persistence → keyboard focus → second-device login → password change → both old sessions invalid → new login → logout/reused-cookie denied → expired database session denied. Manager/owner dashboard and actual CSV downloads passed; manager owner-report requests and customer admin requests returned 403; untrusted Origin was rejected even with a forged forwarded header.
+- HTTPS browser cookies were Secure, HttpOnly and SameSite=Lax; document.cookie could not read the token. HTTPS used a self-signed localhost certificate without adding system trust; Playwright ignored only that test certificate. No public deployment occurred. Public ads and mobile layout passed with no document overflow, runtime errors or console warnings in both final runs. Mobile profile/report screenshots were visually inspected.
+- Full Docker stack built and all three services became healthy: Docker Engine 29.8.1, Compose 5.5.1, Node 22.23.3, MongoDB 8.3.11, Next 16.3.6. Isolated project zonify-phase6-qa used host ports 3300/4400/27717 and its own named volume; delivery defaults remain 3000/4000/27017. Chrome verified same-origin proxy, server-rendered cookie authentication, manager/owner dashboard, report authorization, CSV download, ads, mobile and logout. A stop/start of all containers retained identical counts and BSON hashes in every application collection excluding transient sessions. QA containers were stopped after verification and their volume retained.
+- Docker QA found pnpm attempted a dependency check/install in the read-only non-root runtime; startup was changed to node dist/server.js. TLS QA found the native frontend bound localhost on IPv6; proxy now resolves localhost instead of forcing IPv4. Final runs passed after the fixes.
+- Local preview was restored to the original persistent zonify database on 3000/4000/27017. Final production smoke passed manager login → administration → floor → mobile → logout with no browser errors/warnings. Installation/Docker/HTTPS/backup instructions, customer/admin manuals and an unsigned UAT worksheet were delivered.
+
+Human UAT, approval/signature, scanning a configured real PromptPay account and live bank transfer/verification have **not** occurred. Operators must set their real receiver, verify the QR and perform UAT before taking real payments. Automated proof and an unsigned handoff do not claim acceptance by users. The originally referenced Project plan.xlsx was no longer present at its Downloads path during Phase 5; scope was continued from the recorded project phases and no workbook dates/status were edited.

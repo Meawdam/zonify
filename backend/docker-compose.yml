@@ -22,6 +22,7 @@ services:
     environment:
       MONGO_URI: mongodb://mongodb:27017/zonify
       BACKEND_PORT: 4000
+      BACKEND_HOST: 0.0.0.0
     depends_on:
       mongodb:
         condition: service_healthy

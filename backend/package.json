@@ -11,7 +11,9 @@
     "migrate:auth": "tsx src/scripts/prepare-auth.ts",
     "seed:auth": "tsx src/scripts/seed-auth.ts",
     "seed:catalog": "tsx src/scripts/seed-catalog.ts",
-    "seed:ads": "tsx src/scripts/seed-ads.ts"
+    "seed:ads": "tsx src/scripts/seed-ads.ts",
+    "db:backup": "tsx src/scripts/backup.ts backup",
+    "db:restore": "tsx src/scripts/backup.ts restore"
   },
   "keywords": [],
   "author": "",
@@ -19,11 +21,12 @@
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
-      "version": "^11.21.0",
+      "version": "11.21.0",
       "onFail": "download"
     }
   },
   "type": "module",
+  "packageManager": "pnpm@11.21.0",
   "dependencies": {
     "bcrypt": "^6.0.0",
     "dotenv": "^18.0.3",

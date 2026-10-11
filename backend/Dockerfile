@@ -12,6 +12,10 @@ COPY . .
 
 RUN pnpm build
 
+ENV NODE_ENV=production
+
 EXPOSE 4000
 
-CMD ["pnpm", "start"]
+USER node
+
+CMD ["node", "dist/server.js"]

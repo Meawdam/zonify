@@ -1,4 +1,5 @@
 import express from "express";
+import mongoose from "mongoose";
 
 import { swaggerCustomCss } from "./config/swagger-theme.js";
 import swaggerUi from "swagger-ui-express";
@@ -22,7 +23,8 @@ app.use("/api", requireOrigin);
 app.use(express.json({ limit: "16kb" }));
 
 app.get("/health", (req, res) => {
-  res.json({ status: "ok" });
+  const ready = mongoose.connection.readyState === 1;
+  res.status(ready ? 200 : 503).json({ status: ready ? "ok" : "unavailable" });
 });
 
 app.use(

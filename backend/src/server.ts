@@ -9,7 +9,7 @@ const startServer = async () => {
   try {
     await connectDatabase();
     await new Promise<void>((resolve, reject) => {
-      const server = app.listen(env.PORT);
+      const server = app.listen(env.PORT, env.HOST);
       server.once("listening", resolve);
       server.once("error", reject);
     });
