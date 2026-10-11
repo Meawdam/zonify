@@ -5,17 +5,19 @@ import { adminFields, adminLabels, adminRequest, defaults, type AdminKind, type 
 import { usePublicData } from "../lib/use-public-data";
 import { StallPlan } from "./stall-plan";
 import { baht, type FloorPlan } from "../lib/catalog";
+import { BookingList } from "./booking-workspace";
 
 export function AdminWorkspace({ user }: { user: User }) {
-  const [tab, setTab] = useState<AdminKind | "floor" | "users">("markets");
+  const [tab, setTab] = useState<AdminKind | "floor" | "users" | "bookings" | "holds">("markets");
   const refs = usePublicData<AdminReferences>("/api/admin/references", 0, true);
   const [notice, setNotice] = useState("");
   function refresh() { refs.retry(); }
   return <div className="admin-workspace">
     <nav className="admin-tabs" aria-label="เมนูจัดการ">{(Object.keys(adminLabels) as AdminKind[]).map(kind => <button key={kind} aria-current={tab === kind ? "page" : undefined} onClick={() => { setTab(kind); setNotice(""); }}>{adminLabels[kind]}</button>)}<button aria-current={tab === "floor" ? "page" : undefined} onClick={() => { setTab("floor"); setNotice(""); }}>จัดผังล็อก</button><button aria-current={tab === "users" ? "page" : undefined} onClick={() => { setTab("users"); setNotice(""); }}>ผู้ใช้</button></nav>
+    <nav className="admin-tabs" aria-label="เมนูรายการจอง"><button aria-current={tab === "bookings" ? "page" : undefined} onClick={() => { setTab("bookings"); setNotice(""); }}>รายการจอง</button><button aria-current={tab === "holds" ? "page" : undefined} onClick={() => { setTab("holds"); setNotice(""); }}>พักล็อก</button></nav>
     {notice && <p className="form-notice" role="status">{notice}</p>}
     {refs.loading && !refs.data ? <p className="catalog-state" role="status">กำลังโหลดข้อมูลจัดการ…</p> : refs.error ? <p className="catalog-state" role="alert">{refs.error} <button className="text-link" onClick={refs.retry}>ลองใหม่</button></p> : refs.data && <>
-      {tab === "users" ? <UserList key="users" user={user}/> : tab === "floor" ? <FloorEditor key="floor" refs={refs.data} onChange={refresh}/> : <ResourcePanel key={tab} kind={tab} refs={refs.data} onChange={refresh} onNotice={setNotice}/>}
+      {tab === "bookings" || tab === "holds" ? <BookingList key={tab} manager holdsOnly={tab === "holds"}/> : tab === "users" ? <UserList key="users" user={user}/> : tab === "floor" ? <FloorEditor key="floor" refs={refs.data} onChange={refresh}/> : <ResourcePanel key={tab} kind={tab} refs={refs.data} onChange={refresh} onNotice={setNotice}/>}
     </>}
   </div>;
 }

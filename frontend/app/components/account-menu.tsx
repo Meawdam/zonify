@@ -14,6 +14,7 @@ export function AccountMenu({ user }: { user: User | null }) {
     finally { setBusy(false); }
   }
   return <div className="account-menu">
+    {user && <Link href="/bookings">รายการจองของฉัน</Link>}
     {user && user.role !== "customer" && <Link href="/admin">จัดการตลาด</Link>}
     {user ? <><Link href="/profile" className="account-name">บัญชี: {user.name}</Link><button className="nav-link" onClick={logout} disabled={busy}>{busy ? "กำลังออก…" : "ออกจากระบบ"}</button></> : <Link href="/login">เข้าสู่ระบบ</Link>}
     {error && <span role="alert" className="field-error">{error}</span>}

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { MarketModel, CategoryModel, ZoneModel, StallModel, StallDayStateModel, ShopModel } from "./catalog.schema.js";
 import { HttpError } from "../../middlewares/http-error.js";
+import { BookingModel, activeBookingStatuses } from "../bookings/booking.schema.js";
 export function bangkokDate(now = new Date()) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
 }
@@ -41,22 +42,28 @@ export async function floorPlan(marketId: string, date: string, now = new Date()
     ZoneModel.find({ marketId }).sort({ order: 1, _id: 1 }).lean(),
   ]);
   const zonesById = new Map(zones.map(z => [z._id, z]));
-  const states = await StallDayStateModel.find({ stallId: { $in: stalls.map(s => s._id) }, date }).lean();
+  const [states, bookings] = await Promise.all([
+    StallDayStateModel.find({ stallId: { $in: stalls.map(s => s._id) }, date }).lean(),
+    BookingModel.find({ stallId: { $in: stalls.map(s => s._id) }, date, status: { $in: [...activeBookingStatuses] }, $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }] }).lean(),
+  ]);
   const byId = new Map(states.map(s => [s.stallId, s]));
+  const bookingById = new Map(bookings.map(b => [b.stallId, b]));
   const counts = { available: 0, booked: 0, held: 0, unavailable: 0 };
   const items = stalls.map(s => {
     const state = byId.get(s._id);
+    const booking = bookingById.get(s._id);
     const enabled = s.enabled && (!s.zoneId || zonesById.get(s.zoneId)?.active === true);
     let status: keyof typeof counts = enabled ? "available" : "unavailable";
     if (enabled && state) {
       // An invalid hold without an expiry fails closed. Expired holds are never shown as active.
       status = state.status === "held" && state.expiresAt && state.expiresAt <= now ? "available" : state.status;
     }
+    if (enabled && booking) status = booking.status === "held" ? "held" : "booked";
     counts[status]++;
     return { id: s._id, code: s.code, row: s.row, rowOrder: s.rowOrder, column: s.column,
       width: s.width, depth: s.depth, pricePerDay: s.pricePerDay, description: s.description,
       zoneId: s.zoneId ?? null, zoneName: s.zoneId ? zonesById.get(s.zoneId)?.name ?? null : null,
-      status, holdExpiresAt: status === "held" ? state?.expiresAt?.toISOString() ?? null : null };
+      status, holdExpiresAt: status === "held" ? (booking?.expiresAt ?? state?.expiresAt)?.toISOString() ?? null : null };
   });
   return { market: marketPublic(market), date, updatedAt: now.toISOString(), counts, stalls: items };
 }

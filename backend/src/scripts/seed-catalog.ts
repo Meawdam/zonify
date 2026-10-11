@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { pathToFileURL } from "node:url";
 import { MarketModel, CategoryModel, ZoneModel, StallModel, StallDayStateModel, ShopModel, ensureCatalogIndexes } from "../modules/catalog/catalog.schema.js";
 import { bangkokDate, dateQuery } from "../modules/catalog/catalog.service.js";
+import { BookingModel, activeBookingStatuses } from "../modules/bookings/booking.schema.js";
 export async function seedCatalog(date = bangkokDate()) {
   dateQuery.parse(date);
   await ensureCatalogIndexes();
@@ -45,10 +46,12 @@ export async function seedCatalog(date = bangkokDate()) {
     const [_id, marketId, categoryId, code, name, description, hours] = entry as [string, string, string, string, string, string, string];
     const stallId = marketId + "-" + code;
     await ShopModel.updateOne({ _id }, { $setOnInsert: { _id, marketId, categoryId, stallId, name, description, hours, active: true } }, { upsert: true });
-    await StallDayStateModel.updateOne({ stallId, date }, { $setOnInsert: { stallId, date, status: "booked" } }, { upsert: true });
+    if (!await BookingModel.exists({ stallId, date, status: { $in: [...activeBookingStatuses] } }))
+      await StallDayStateModel.updateOne({ stallId, date }, { $setOnInsert: { stallId, date, status: "booked" } }, { upsert: true });
   }
   // Deterministic day-end sample hold; re-running the seed does not extend or overwrite it.
-  await StallDayStateModel.updateOne({ stallId: "canal-B06", date }, { $setOnInsert: { stallId: "canal-B06", date, status: "held", expiresAt: new Date(date + "T23:59:59+07:00") } }, { upsert: true });
+  if (!await BookingModel.exists({ stallId: "canal-B06", date, status: { $in: [...activeBookingStatuses] } }))
+    await StallDayStateModel.updateOne({ stallId: "canal-B06", date }, { $setOnInsert: { stallId: "canal-B06", date, status: "held", expiresAt: new Date(date + "T23:59:59+07:00") } }, { upsert: true });
   console.log(`Catalog sample data ready for ${date}; existing records preserved.`);
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

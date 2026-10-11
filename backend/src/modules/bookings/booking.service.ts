@@ -1,0 +1,112 @@
+import { randomUUID } from "node:crypto";
+import { HttpError } from "../../middlewares/http-error.js";
+import { UserModel, publicUser } from "../users/schema/user.schema.js";
+import { MarketModel, ZoneModel, StallModel, StallDayStateModel } from "../catalog/catalog.schema.js";
+import { BookingModel, activeBookingStatuses } from "./booking.schema.js";
+import type { z } from "zod";
+import type { bookingQuery } from "./booking.dto.js";
+export const HOLD_MS = 10 * 60_000;
+export const PAYMENT_MS = 30 * 60_000;
+export async function expireBookings(now = new Date(), slot?: { stallId: string; date: string }) {
+  return BookingModel.updateMany({ status: { $in: ["held", "pending_payment"] }, expiresAt: { $lte: now }, ...slot }, { $set: { status: "expired" } });
+}
+export function presentBooking(doc: object) {
+  const row = doc as Record<string, unknown>;
+  const user = row.userSnapshot as Record<string, unknown> | undefined;
+  const stall = row.stallSnapshot as Record<string, unknown> | undefined;
+  return { id: row._id, date: row.date, status: row.status, price: row.price,
+    createdAt: row.createdAt, updatedAt: row.updatedAt, expiresAt: row.expiresAt ?? null,
+    cancelledAt: row.cancelledAt ?? null, cancelReason: row.cancelReason ?? "",
+    customer: { id: row.userId, name: user?.name ?? "", email: user?.email ?? "", phone: user?.phone ?? "", role: user?.role ?? "customer" },
+    stall: { id: row.stallId, marketId: row.marketId, code: stall?.code ?? "", width: stall?.width ?? 0, depth: stall?.depth ?? 0, marketName: stall?.marketName ?? "", zoneName: stall?.zoneName ?? "" },
+  };
+}
+async function usableStall(id: string) {
+  const stall = await StallModel.findById(id).lean();
+  if (!stall) throw new HttpError(404, "STALL_NOT_FOUND", "ไม่พบล็อกนี้");
+  const [market, zone] = await Promise.all([
+    MarketModel.findOne({ _id: stall.marketId, active: true }).lean(),
+    stall.zoneId ? ZoneModel.findOne({ _id: stall.zoneId, marketId: stall.marketId, active: true }).lean() : Promise.resolve(null),
+  ]);
+  if (!market || !stall.enabled || (stall.zoneId && !zone)) throw new HttpError(409, "STALL_UNAVAILABLE", "ตลาด โซน หรือล็อกนี้ปิดใช้งาน");
+  return { stall, market, zone };
+}
+export async function createHold(userId: string, stallId: string, date: string, now = new Date()) {
+  await expireBookings(now, { stallId, date });
+  const { stall, market, zone } = await usableStall(stallId);
+  const [user, sample] = await Promise.all([
+    UserModel.findById(userId).lean(), StallDayStateModel.findOne({ stallId, date }).lean(),
+  ]);
+  if (!user) throw new HttpError(401, "UNAUTHENTICATED", "กรุณาเข้าสู่ระบบใหม่");
+  if (sample && !(sample.status === "held" && sample.expiresAt && sample.expiresAt <= now))
+    throw new HttpError(409, "STALL_TAKEN", "ล็อกนี้ไม่ว่างในวันที่เลือก");
+  const existing = await BookingModel.findOne({ stallId, date, status: { $in: [...activeBookingStatuses] } }).lean();
+  if (existing) {
+    if (existing.userId === userId && existing.status === "held" && existing.expiresAt && existing.expiresAt > now) return presentBooking(existing);
+    throw new HttpError(409, "STALL_TAKEN", "มีผู้พักล็อกหรือจองล็อกนี้แล้ว");
+  }
+  try {
+    const doc = await BookingModel.create({ _id: randomUUID(), userId, userSnapshot: publicUser(user), marketId: market._id, stallId, date,
+      stallSnapshot: { code: stall.code, width: stall.width, depth: stall.depth, marketName: market.name, zoneName: zone?.name ?? "" },
+      price: stall.pricePerDay, status: "held", expiresAt: new Date(now.valueOf() + HOLD_MS) });
+    return presentBooking(doc.toObject());
+  } catch (error) {
+    if (typeof error === "object" && error !== null && "code" in error && error.code === 11000) {
+      const winner = await BookingModel.findOne({ stallId, date, userId, status: "held", expiresAt: { $gt: now } }).lean();
+      if (winner) return presentBooking(winner);
+      throw new HttpError(409, "STALL_TAKEN", "มีผู้พักล็อกหรือจองล็อกนี้แล้ว");
+    }
+    throw error;
+  }
+}
+async function owned(id: string, userId: string) {
+  const row = await BookingModel.findOne({ _id: id, userId }).lean();
+  if (!row) throw new HttpError(404, "BOOKING_NOT_FOUND", "ไม่พบรายการของคุณ");
+  return row;
+}
+export async function confirmBooking(id: string, userId: string, now = new Date()) {
+  await expireBookings(now);
+  const row = await owned(id, userId);
+  if (row.status === "pending_payment" && row.expiresAt && row.expiresAt > now) return presentBooking(row);
+  if (row.status !== "held" || !row.expiresAt || row.expiresAt <= now) throw new HttpError(409, "HOLD_EXPIRED", "รายการพักล็อกหมดอายุหรือใช้ไม่ได้แล้ว");
+  await usableStall(row.stallId);
+  const updated = await BookingModel.findOneAndUpdate({ _id: id, userId, status: "held", expiresAt: { $gt: now } },
+    { $set: { status: "pending_payment", expiresAt: new Date(now.valueOf() + PAYMENT_MS) } }, { returnDocument: "after" }).lean();
+  if (!updated) throw new HttpError(409, "BOOKING_CHANGED", "สถานะรายการเปลี่ยนแล้ว กรุณาโหลดใหม่");
+  return presentBooking(updated);
+}
+export async function cancelBooking(id: string, actorId: string, reason: string, manager = false, now = new Date()) {
+  await expireBookings(now);
+  const row = manager ? await BookingModel.findById(id).lean() : await owned(id, actorId);
+  if (!row) throw new HttpError(404, "BOOKING_NOT_FOUND", "ไม่พบรายการนี้");
+  if (row.status === "cancelled") return presentBooking(row);
+  // Financial review/confirmed bookings require manager control, handled in the payment phase.
+  const permitted = manager ? [...activeBookingStatuses] : ["held", "pending_payment"] as const;
+  const updated = await BookingModel.findOneAndUpdate({ _id: id, status: { $in: permitted }, ...(manager ? {} : { userId: actorId }) },
+    { $set: { status: "cancelled", cancelledAt: now, cancelReason: reason, cancelledBy: actorId, expiresAt: null } },
+    { returnDocument: "after" }).lean();
+  if (!updated) throw new HttpError(409, "BOOKING_CHANGED", "รายการนี้ยกเลิกไม่ได้หรือสถานะเปลี่ยนแล้ว");
+  return presentBooking(updated);
+}
+export async function listBookings(query: z.infer<typeof bookingQuery>, userId?: string, holdsOnly = false) {
+  await expireBookings();
+  const filter = { ...(userId ? { userId } : {}), ...(holdsOnly ? { status: "held" as const } : query.status ? { status: query.status } : {}), ...(query.date ? { date: query.date } : {}), ...(query.market ? { marketId: query.market } : {}) };
+  const [items, total] = await Promise.all([
+    BookingModel.find(filter).sort({ createdAt: -1, _id: 1 }).skip((query.page - 1) * query.limit).limit(query.limit).lean(),
+    BookingModel.countDocuments(filter),
+  ]);
+  return { items: items.map(presentBooking), total, page: query.page, pages: Math.ceil(total / query.limit) };
+}
+export async function getBooking(id: string, userId: string) {
+  await expireBookings(); return presentBooking(await owned(id, userId));
+}
+export async function releaseHold(id: string, managerId: string, reason: string, now = new Date()) {
+  await expireBookings(now);
+  const updated = await BookingModel.findOneAndUpdate({ _id: id, status: "held", expiresAt: { $gt: now } },
+    { $set: { status: "cancelled", cancelledAt: now, cancelReason: reason, cancelledBy: managerId, expiresAt: null } }, { returnDocument: "after" }).lean();
+  if (!updated) {
+    if (!await BookingModel.exists({ _id: id })) throw new HttpError(404, "BOOKING_NOT_FOUND", "ไม่พบรายการนี้");
+    throw new HttpError(409, "HOLD_CHANGED", "รายการนี้ไม่ใช่การพักล็อกแล้ว กรุณาโหลดใหม่");
+  }
+  return presentBooking(updated);
+}

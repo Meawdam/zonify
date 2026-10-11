@@ -5,7 +5,7 @@ import { baht, validDate, type Market } from "../lib/catalog";
 import { Icon } from "./icons";
 import { FloorBrowser } from "./floor-browser";
 import { ShopDirectory } from "./shop-directory";
-export function MarketExplorer({ initialDate, initialMarket, initialStall }: { initialDate: string; initialMarket: string; initialStall: string }) {
+export function MarketExplorer({ initialDate, initialMarket, initialStall, loggedIn = false }: { initialDate: string; initialMarket: string; initialStall: string; loggedIn?: boolean }) {
   const markets = usePublicData<{ items: Market[] }>("/api/markets");
   const [marketId, setMarketId] = useState(initialMarket);
   const [date, setDate] = useState(initialDate);
@@ -29,7 +29,7 @@ export function MarketExplorer({ initialDate, initialMarket, initialStall }: { i
           <label className="date-control"><Icon name="calendar"/><input type="date" aria-label="วันที่ดูสถานะ" value={date} onChange={e => setDate(e.target.value)} aria-invalid={!validDate(date)}/></label>
         </div>
       </div>
-      {!validDate(date) ? <p className="catalog-state" role="alert">กรุณาเลือกวันที่ให้ถูกต้อง</p> : current ? <FloorBrowser key={current.id + "|" + date} market={current} date={date} initialStall={current.id === initialMarket ? initialStall : ""}/> : <p className="catalog-state">เลือกตลาดเพื่อดูผังล็อก</p>}
+      {!validDate(date) ? <p className="catalog-state" role="alert">กรุณาเลือกวันที่ให้ถูกต้อง</p> : current ? <FloorBrowser key={current.id + "|" + date} market={current} date={date} initialStall={current.id === initialMarket ? initialStall : ""} loggedIn={loggedIn}/> : <p className="catalog-state">เลือกตลาดเพื่อดูผังล็อก</p>}
     </div></section>
     <ShopDirectory markets={markets.data?.items ?? []}/>
   </>;

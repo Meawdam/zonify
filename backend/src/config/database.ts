@@ -3,6 +3,7 @@ import { env } from "./env.js";
 import { UserModel } from "../modules/users/schema/user.schema.js";
 import { SessionModel } from "../modules/users/schema/session.schema.js";
 import { ensureCatalogIndexes } from "../modules/catalog/catalog.schema.js";
+import { BookingModel } from "../modules/bookings/booking.schema.js";
 export const connectDatabase = async () => {
   await mongoose.connect(env.MONGO_URI);
   // Never normalize or merge existing records implicitly during startup.
@@ -14,5 +15,6 @@ export const connectDatabase = async () => {
   await UserModel.createIndexes();
   await SessionModel.createIndexes();
   await ensureCatalogIndexes();
+  await BookingModel.createIndexes();
   console.log("MongoDB connected");
 };

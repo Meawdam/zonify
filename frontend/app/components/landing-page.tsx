@@ -38,7 +38,7 @@ export function LandingPage({ user, initialDate, initialMarket, initialStall }: 
       <div id="how-it-works" className="container steps" aria-label="ขั้นตอนการสำรวจตลาด">
         {[{ title: "เลือกตลาด", copy: "ค้นหาตลาดที่ตรงกับสไตล์ของคุณ" }, { title: "ดูล็อกบนผัง", copy: "ดูตำแหน่ง ขนาด ราคา และสถานะ" }, { title: "ค้นหาร้านค้า", copy: "ดูร้านที่สนใจและตำแหน่งบนผัง" }].map((step, index) => <div className="step" key={step.title}><span className="step-number">0{index + 1}</span><h2>{step.title}</h2><p>{step.copy}</p></div>)}
       </div></section>
-      <MarketExplorer initialDate={initialDate} initialMarket={initialMarket} initialStall={initialStall}/>
+      <MarketExplorer initialDate={initialDate} initialMarket={initialMarket} initialStall={initialStall} loggedIn={!!user}/>
       <section className="cta-section"><div className="container cta-inner"><h2>เริ่มร้านเล็ก ๆ ในตลาดที่ใช่</h2><p>พื้นที่ดี ๆ รอให้เรื่องราวของคุณเริ่มต้น</p><a className="button button-white" href="#markets">เลือกตลาดของคุณ <Icon/></a></div></section>
     </main>
     <footer><div className="container footer-inner"><Brand/><p>© 2026 Zonify · พื้นที่ทดลองเลือกล็อกตลาดนัดเชียงใหม่</p></div></footer>

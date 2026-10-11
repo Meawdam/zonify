@@ -1,5 +1,45 @@
 @import "tailwindcss";
 
+/* Reservations and time-limited holds. */
+.booking-action { margin-top: 24px; }
+.booking-action > .button { width: 100%; }
+.booking-action .catalog-note { margin: 0 0 16px; padding-top: 16px; }
+.booking-filters { display: flex; flex-wrap: wrap; gap: 16px; align-items: end; margin-bottom: 24px; }
+.booking-filters label { display: grid; gap: 8px; flex: 1; min-width: 160px; font-size: 14px; }
+.booking-filters select, .booking-filters input { width: 100%; min-height: 48px; border: 1px solid #a6aa9f; border-radius: 8px; padding: 10px 12px; background: white; }
+.booking-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.booking-card { min-width: 0; padding: 28px; border: 1px solid var(--line); border-radius: 14px; background: #fffdf8; }
+.booking-card-heading { display: flex; align-items: start; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+.booking-card-heading h2, .booking-card-heading h3 { font-size: 26px; line-height: 1.4; overflow-wrap: anywhere; }
+.booking-status { padding: 5px 12px; border-radius: 20px; background: #e5efde; color: #214b35; font-size: 13px; flex-shrink: 0; }
+.booking-status.held { background: #f7e8c0; color: #614612; }
+.booking-status.pending_payment, .booking-status.payment_review { background: #fbe5d9; color: #7a3d20; }
+.booking-status.cancelled, .booking-status.expired { background: #eee7de; color: #68584c; }
+.booking-reference { overflow-wrap: anywhere; color: var(--muted); font-size: 12px; margin-bottom: 20px; }
+.booking-facts { margin: 0 0 24px; }
+.booking-facts > div { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.booking-facts dt { color: var(--muted); }
+.booking-facts dd { margin: 0; }
+.booking-expiry { display: grid; grid-template-columns: 1fr auto; gap: 8px 16px; padding: 18px; margin: 20px 0; border: 1px solid #ded7b9; border-radius: 10px; background: #f7f2df; }
+.booking-expiry strong { font-size: 26px; font-variant-numeric: tabular-nums; }
+.booking-expiry small { grid-column: 1 / -1; color: var(--muted); font-size: 12px; }
+.booking-buttons { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin: 20px 0; }
+.booking-buttons .button-white { border: 1px solid var(--line); }
+.booking-cancel-form { display: grid; gap: 12px; padding: 18px; border: 1px solid var(--line); border-radius: 10px; margin: 16px 0; }
+.booking-cancel-form textarea { font: inherit; width: 100%; min-height: 90px; padding: 12px; border: 1px solid #a6aa9f; border-radius: 8px; background: white; resize: vertical; }
+.booking-cancel-form textarea:focus-visible { outline: 3px solid var(--orange); outline-offset: 4px; }
+.booking-customer { display: grid; gap: 6px; padding: 16px 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+.booking-customer span { color: var(--muted); font-size: 13px; }
+.booking-footer { display: flex; flex-wrap: wrap; gap: 24px; padding-top: 20px; border-top: 1px solid var(--line); margin-top: 24px; }
+@media (max-width: 760px) {
+  .booking-grid { grid-template-columns: 1fr; }
+  .booking-filters label { min-width: 100%; }
+  .booking-card { padding: 20px; }
+  .booking-facts > div { grid-template-columns: 1fr; gap: 6px; }
+  .booking-card-heading { flex-wrap: wrap; }
+  .booking-buttons .button { flex: 1; }
+}
+
 /* Manager workspace shares the public market palette. */
 .admin-page { width: min(1240px, calc(100% - 64px)); margin: 40px auto 80px; }
 .admin-tabs { display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 24px; margin-bottom: 28px; border-bottom: 1px solid var(--line); }

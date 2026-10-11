@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-type Result<T> = { key: string; data: T | null; error: string };
+type Result<T> = { key: string; sourceUrl: string; data: T | null; error: string };
 export function usePublicData<T>(url: string | null, pollMs = 0, keepPrevious = false) {
   const [attempt, setAttempt] = useState(0);
   const key = url + "|" + attempt;
@@ -16,9 +16,9 @@ export function usePublicData<T>(url: string | null, pollMs = 0, keepPrevious = 
         const response = await fetch(url!, { signal: controller.signal, cache: "no-store" });
         const data = await response.json();
         if (!response.ok) throw new Error(data.message ?? "โหลดข้อมูลไม่สำเร็จ");
-        if (!controller.signal.aborted) setResult({ key, data: data as T, error: "" });
+        if (!controller.signal.aborted) setResult({ key, sourceUrl: url!, data: data as T, error: "" });
       } catch (error) {
-        if (!controller.signal.aborted) setResult({ key, data: null, error: error instanceof Error ? error.message : "เชื่อมต่อระบบไม่ได้" });
+        if (!controller.signal.aborted) setResult({ key, sourceUrl: url!, data: null, error: error instanceof Error ? error.message : "เชื่อมต่อระบบไม่ได้" });
       } finally { busy = false; }
     }
     void load();
@@ -28,5 +28,5 @@ export function usePublicData<T>(url: string | null, pollMs = 0, keepPrevious = 
     return () => { controller.abort(); if (timer) clearInterval(timer); window.removeEventListener("focus", refreshVisible); };
   }, [url, key, pollMs]);
   const current = result?.key === key ? result : null;
-  return { data: current ? current.data : keepPrevious ? result?.data ?? null : null, error: current?.error ?? "", loading: !!url && !current, retry: () => setAttempt(n => n + 1) };
+  return { data: current ? current.data : keepPrevious && result?.sourceUrl === url ? result.data : null, error: current?.error ?? "", loading: !!url && !current, retry: () => setAttempt(n => n + 1) };
 }
