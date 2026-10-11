@@ -92,4 +92,3 @@ export function PaymentPanel({ booking, manager = false, expired = false, refres
     </div>}
   </section>;
 }
-
