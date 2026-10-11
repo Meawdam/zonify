@@ -19,6 +19,7 @@ export const bookingSchemas = {
     id: { type: "string" }, date: { type: "string", format: "date" }, status: { type: "string", enum: [...bookingStatuses] }, price: { type: "number", minimum: 0, description: "Daily price snapshot at hold creation, never supplied by client" },
     createdAt: { type: "string", format: "date-time" }, updatedAt: { type: "string", format: "date-time" }, expiresAt: { type: "string", format: "date-time", nullable: true }, cancelledAt: { type: "string", format: "date-time", nullable: true }, cancelReason: { type: "string" },
     customer: { $ref: "#/components/schemas/User" },
+    payment: { $ref: "#/components/schemas/BookingPayment" },
     stall: { type: "object", properties: { id: { type: "string" }, marketId: { type: "string" }, code: { type: "string" }, width: { type: "number" }, depth: { type: "number" }, marketName: { type: "string" }, zoneName: { type: "string" } } },
   } },
 };
@@ -31,7 +32,7 @@ export const bookingPaths = {
   "/api/bookings/{id}/confirm": { post: { summary: "Convert own active hold to pending_payment for 30 minutes", description: "Uses the stored daily price and checks current market/zone/stall availability. This does not claim payment received. An already pending-payment retry does not extend its deadline.", security, parameters: id, requestBody: body({ type: "object", additionalProperties: false }), responses: result } },
   "/api/bookings/{id}/cancel": { post: { summary: "Cancel own held/pending-payment reservation", description: "History and reason retained. Financial review/confirmed states require manager control.", security, parameters: id, requestBody: body(reason), responses: result } },
   "/api/admin/bookings": { get: { summary: "All booking records (manager/owner)", security, parameters: filter, responses: { 200: { description: "Paginated booking records including customer contact snapshots", content: json(list) }, ...errors } } },
-  "/api/admin/bookings/{id}/cancel": { post: { summary: "Cancel active reservation with reason (manager/owner)", security, parameters: id, requestBody: body(reason), responses: result } },
+  "/api/admin/bookings/{id}/cancel": { post: { summary: "Cancel held/pending/confirmed reservation with reason (manager/owner)", description: "payment_review must be reviewed before cancellation. Cancelling a paid confirmed booking creates a pending refund and retains payment evidence.", security, parameters: id, requestBody: body(reason), responses: result } },
   "/api/admin/holds": { get: { summary: "Active temporary holds only (manager/owner)", security, parameters: filter.filter(p => p.name !== "status"), responses: { 200: { description: "Active holds; overdue holds expire automatically", content: json(list) }, ...errors } } },
   "/api/admin/holds/{id}/release": { post: { summary: "Release an unexpired temporary hold (manager/owner)", description: "A hold that has already changed to pending payment cannot be released through this endpoint.", security, parameters: id, requestBody: body(reason), responses: result } },
 };

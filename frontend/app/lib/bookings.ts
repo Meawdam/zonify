@@ -1,15 +1,19 @@
 import { ApiError, type User } from "./auth";
 export const bookingStatusLabels = { held: "พักล็อก", pending_payment: "รอชำระเงิน", payment_review: "รอตรวจสอบสลิป", confirmed: "ยืนยันแล้ว", cancelled: "ยกเลิกแล้ว", expired: "หมดอายุ" };
 export type BookingStatus = keyof typeof bookingStatusLabels;
+export type PaymentAttempt = { id: string; amount: number; transferredAt: string; reference: string; submittedAt: string;
+  status: "review" | "approved" | "rejected"; reviewedAt: string | null; reviewReason: string; verifiedReference: string; slipUrl: string };
 export type Booking = {
   id: string; date: string; status: BookingStatus; price: number; createdAt: string; updatedAt: string;
   expiresAt: string | null; cancelledAt: string | null; cancelReason: string;
   customer: User; stall: { id: string; marketId: string; code: string; width: number; depth: number; marketName: string; zoneName: string };
+  payment: { recipient: { id: string; name: string } | null; paidAt: string | null; approvedReference: string | null;
+    attempts: PaymentAttempt[]; refund: { status: "pending" | "refunded"; amount: number; reference: string; completedAt: string | null } | null };
 };
 export type BookingResults = { items: Booking[]; total: number; page: number; pages: number };
 export async function bookingRequest<T>(path: string, body: unknown): Promise<T> {
   let response: Response;
-  try { response = await fetch("/api" + path, { method: "POST", credentials: "same-origin", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); }
+  try { response = await fetch("/api" + path, { method: "POST", credentials: "same-origin", cache: "no-store", ...(body instanceof FormData ? { body } : { headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }) }); }
   catch { throw new ApiError(0, "NETWORK_ERROR", "เชื่อมต่อระบบไม่ได้ กรุณาลองใหม่"); }
   const data = await response.json().catch(() => null);
   if (!response.ok) {

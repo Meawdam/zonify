@@ -1,6 +1,7 @@
 import { catalogPaths, catalogSchemas } from "../modules/catalog/catalog.openapi.js";
 import { adminPaths } from "../modules/admin/admin.openapi.js";
 import { bookingPaths, bookingSchemas } from "../modules/bookings/booking.openapi.js";
+import { paymentPaths, paymentSchemas } from "../modules/payments/payment.openapi.js";
 const string = { type: "string" };
 const user = { type: "object", required: ["id", "name", "email", "phone", "role"], properties: {
   id: string, name: string, email: { type: "string", format: "email" }, phone: string,
@@ -23,11 +24,12 @@ export const swaggerSpec = {
   openapi: "3.0.0",
   info: { title: "Zonify API", version: "1.0.0", description: "Cookie sessions last one hour. All mutations require Origin equal to APP_ORIGIN. Use the frontend origin for browser requests; standalone API clients must explicitly send Origin. Login returns a User, never a bearer token. Password changes revoke all sessions. Rate limits: registration 10/hour; login and password changes share 20/15 minutes per backend peer IP (shared by the local Next proxy)." },
   servers: [{ url: "/" }],
-  components: { schemas: { User: user, Error: error, ...catalogSchemas, ...bookingSchemas }, securitySchemes: { cookieAuth: { type: "apiKey", in: "cookie", name: "zonify_session" } } },
+  components: { schemas: { User: user, Error: error, ...catalogSchemas, ...bookingSchemas, ...paymentSchemas }, securitySchemes: { cookieAuth: { type: "apiKey", in: "cookie", name: "zonify_session" } } },
   paths: {
     ...catalogPaths,
     ...adminPaths,
     ...bookingPaths,
+    ...paymentPaths,
     "/api/users": {
       post: { summary: "Register a customer (role fields rejected)", requestBody: body({ name: string, email, password }), responses: responses(201, user) },
       get: { summary: "List users (manager/owner)", security, responses: responses(200, { type: "array", items: user }) },

@@ -6,8 +6,8 @@ These are delivery subdivisions of Phase I in Project plan.xlsx, not changes to 
 | --- | --- | --- |
 | 1 | rs001–rs004: authentication, profile, public floor plan, shop directory | Completed and pushed in 9dc9538 |
 | 2 | rs009–rs011, rs015: persistent local database, manager master data, floor plan, stalls, shop directory | Completed and pushed in 0fc45e0; persistent database restart verified |
-| 3 | rs005–rs006, rs012, rs014, booking portion of rs008: daily single-stall booking, concurrent holds, expiry, history, manager booking control | Completed; 48 API tests, production builds, desktop/mobile/keyboard booking workflows verified |
-| 4 | rs007, rs013, payment portion of rs008: PromptPay QR, slip uploads, manager review and booking/payment states | Pending |
+| 3 | rs005–rs006, rs012, rs014, booking portion of rs008: daily single-stall booking, concurrent holds, expiry, history, manager booking control | Completed and pushed in b6067dd; 48 API tests and browser QA passed |
+| 4 | rs007, rs013, payment portion of rs008: PromptPay QR, slip uploads, manager review and booking/payment states | Completed; 57 API tests, builds, desktop/mobile/keyboard payment and refund-recording workflows verified |
 | 5 | rs016–rs018: advertisements, dashboard, management and owner reports | Pending |
 | 6 | Cross-module system testing, concurrency, browser/mobile/keyboard QA, Docker/HTTPS, backups, installation/user/admin manuals and UAT handoff | Pending; Phase 1–2 checks only |
 

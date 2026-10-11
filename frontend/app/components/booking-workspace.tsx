@@ -6,6 +6,7 @@ import { ApiError } from "../lib/auth";
 import { baht, type Market } from "../lib/catalog";
 import { usePublicData } from "../lib/use-public-data";
 import { bookingDate, bookingTime, bookingRequest, bookingStatusLabels, floorLink, type Booking, type BookingResults, type BookingStatus } from "../lib/bookings";
+import { PaymentPanel } from "./payment-panel";
 
 function useBookingClock() {
   const [now, setNow] = useState<number | null>(null);
@@ -48,7 +49,7 @@ function BookingControl({ booking, manager, holdsOnly, now, refresh, onNotice }:
       if (e instanceof ApiError && e.status === 409) refresh();
     } finally { setBusy(false); }
   }
-  const canCancel = !expired && (manager ? ["held", "pending_payment", "payment_review", "confirmed"] : ["held", "pending_payment"]).includes(booking.status);
+  const canCancel = !expired && (manager ? ["held", "pending_payment", "confirmed"] : ["held", "pending_payment"]).includes(booking.status);
   return <div className="booking-controls">
     {error && <p className="form-alert" role="alert">{error}</p>}{notice && <p className="form-notice" role="status">{notice}</p>}
     <div className="booking-buttons">
@@ -57,7 +58,7 @@ function BookingControl({ booking, manager, holdsOnly, now, refresh, onNotice }:
       <Link className="text-link" href={floorLink(booking)}>ดูตำแหน่งบนผัง</Link>
     </div>
     {cancel && <form className="booking-cancel-form" onSubmit={(e: FormEvent) => { e.preventDefault(); void mutate("cancel"); }}><label htmlFor={"cancel-" + booking.id}>{manager && holdsOnly ? "เหตุผลที่คืนล็อก" : "เหตุผลที่ยกเลิก"}</label><textarea id={"cancel-" + booking.id} value={reason} onChange={e => setReason(e.target.value)} required maxLength={500} disabled={busy}/><button className="button button-green" disabled={busy || !reason.trim()} type="submit">{busy ? "กำลังบันทึก…" : manager && holdsOnly ? "ยืนยันคืนล็อก" : "ยืนยันยกเลิก"}</button></form>}
-    {!manager && booking.status === "pending_payment" && !expired && <p className="form-description payment-stage-note">ระบบชำระเงินยังไม่เปิดใช้งาน รายการนี้ยังไม่ได้ชำระเงิน และจะหมดอายุอัตโนมัติหากเกินกำหนด</p>}
+    {manager && booking.status === "confirmed" && <p className="form-description">หากยกเลิกรายการที่รับเงินแล้ว ระบบจะบันทึกว่ารอคืนเงิน ต้องโอนคืนและบันทึกเลขอ้างอิงแยก</p>}
   </div>;
 }
 export function BookingDetail({ id }: { id: string }) {
@@ -71,12 +72,13 @@ export function BookingDetail({ id }: { id: string }) {
     <p className="booking-reference">รหัสรายการ {booking.id}</p><BookingFacts booking={booking}/><Expiry booking={booking} now={now}/>
     {booking.cancelReason && <p className="form-description">เหตุผลที่ยกเลิก: {booking.cancelReason}</p>}
     <BookingControl booking={booking} manager={false} holdsOnly={false} now={now} refresh={result.retry}/>
+    <PaymentPanel booking={booking} expired={deadline(booking, now)} refresh={result.retry}/>
     <div className="booking-footer"><Link className="text-link" href="/bookings">รายการจองของฉัน</Link><button className="text-link" onClick={result.retry}>รีเฟรชรายการ</button></div>
   </article>;
 }
-export function BookingList({ manager = false, holdsOnly = false }: { manager?: boolean; holdsOnly?: boolean }) {
+export function BookingList({ manager = false, holdsOnly = false, defaultStatus = "" }: { manager?: boolean; holdsOnly?: boolean; defaultStatus?: BookingStatus | "" }) {
   const [notice, setNotice] = useState("");
-  const [status, setStatus] = useState<BookingStatus | "">(""), [date, setDate] = useState(""), [market, setMarket] = useState(""), [page, setPage] = useState(1);
+  const [status, setStatus] = useState<BookingStatus | "">(defaultStatus), [date, setDate] = useState(""), [market, setMarket] = useState(""), [page, setPage] = useState(1);
   const refs = usePublicData<{ items: Market[] }>("/api/markets");
   const query = new URLSearchParams({ page: String(page), limit: "6", ...(status && !holdsOnly ? { status } : {}), ...(date ? { date } : {}), ...(market ? { market } : {}) });
   const result = usePublicData<BookingResults>((manager ? "/api/admin/" + (holdsOnly ? "holds" : "bookings") : "/api/bookings/me") + "?" + query, 5000, true), now = useBookingClock();
@@ -98,6 +100,7 @@ export function BookingList({ manager = false, holdsOnly = false }: { manager?: 
         {manager && <div className="booking-customer"><strong>{booking.customer.name}</strong><span>{booking.customer.email} • {booking.customer.phone || "ไม่ระบุเบอร์โทร"}</span></div>}
         <Expiry booking={booking} now={now}/>{booking.cancelReason && <p className="form-description">เหตุผล: {booking.cancelReason}</p>}
         <BookingControl booking={booking} manager={manager} holdsOnly={holdsOnly} now={now} refresh={result.retry} onNotice={setNotice}/>{!manager && <Link className="text-link" href={"/bookings/" + booking.id}>ดูรายละเอียดรายการ</Link>}
+        {manager && !holdsOnly && <PaymentPanel booking={booking} manager refresh={result.retry} onNotice={setNotice}/>}
       </article>)}</div>}
       {(result.data.pages > 1 || page > 1) && <nav className="pagination" aria-label="หน้ารายการจอง"><button className="button button-white" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>ก่อนหน้า</button><span>หน้า {page} / {Math.max(1, result.data.pages)}</span><button className="button button-white" disabled={page >= result.data.pages} onClick={() => setPage(p => p + 1)}>ถัดไป</button></nav>}
     </>}

@@ -14,9 +14,16 @@ export function presentBooking(doc: object) {
   const row = doc as Record<string, unknown>;
   const user = row.userSnapshot as Record<string, unknown> | undefined;
   const stall = row.stallSnapshot as Record<string, unknown> | undefined;
+  const attempts = (row.paymentAttempts ?? []) as Record<string, unknown>[];
   return { id: row._id, date: row.date, status: row.status, price: row.price,
     createdAt: row.createdAt, updatedAt: row.updatedAt, expiresAt: row.expiresAt ?? null,
     cancelledAt: row.cancelledAt ?? null, cancelReason: row.cancelReason ?? "",
+    payment: { recipient: row.paymentRecipient ?? null, paidAt: row.paidAt ?? null,
+      approvedReference: row.approvedReference ?? null, refund: row.refund ?? null,
+      attempts: attempts.map(a => ({ id: a.id, amount: a.amount, transferredAt: a.transferredAt,
+        reference: a.submittedReference, submittedAt: a.submittedAt, status: a.status,
+        reviewedAt: a.reviewedAt ?? null, reviewReason: a.reviewReason ?? "", verifiedReference: a.verifiedReference ?? "",
+        slipUrl: `/api/bookings/${row._id}/payment/slips/${a.slipId}` })), },
     customer: { id: row.userId, name: user?.name ?? "", email: user?.email ?? "", phone: user?.phone ?? "", role: user?.role ?? "customer" },
     stall: { id: row.stallId, marketId: row.marketId, code: stall?.code ?? "", width: stall?.width ?? 0, depth: stall?.depth ?? 0, marketName: stall?.marketName ?? "", zoneName: stall?.zoneName ?? "" },
   };
@@ -80,10 +87,13 @@ export async function cancelBooking(id: string, actorId: string, reason: string,
   const row = manager ? await BookingModel.findById(id).lean() : await owned(id, actorId);
   if (!row) throw new HttpError(404, "BOOKING_NOT_FOUND", "ไม่พบรายการนี้");
   if (row.status === "cancelled") return presentBooking(row);
-  // Financial review/confirmed bookings require manager control, handled in the payment phase.
-  const permitted = manager ? [...activeBookingStatuses] : ["held", "pending_payment"] as const;
-  const updated = await BookingModel.findOneAndUpdate({ _id: id, status: { $in: permitted }, ...(manager ? {} : { userId: actorId }) },
-    { $set: { status: "cancelled", cancelledAt: now, cancelReason: reason, cancelledBy: actorId, expiresAt: null } },
+  if (row.status === "payment_review") throw new HttpError(409, "PAYMENT_REVIEW_REQUIRED", "กรุณาตรวจสลิปให้เสร็จก่อนยกเลิกรายการ");
+  const permitted: readonly string[] = manager ? ["held", "pending_payment", "confirmed"] : ["held", "pending_payment"];
+  if (!permitted.includes(row.status)) throw new HttpError(409, "BOOKING_CHANGED", "รายการนี้ยกเลิกไม่ได้หรือสถานะเปลี่ยนแล้ว");
+  const cancellation: Record<string, unknown> = { status: "cancelled", cancelledAt: now, cancelReason: reason, cancelledBy: actorId, expiresAt: null,
+    ...(row.status === "confirmed" ? { refund: { status: "pending", amount: row.price, requestedAt: now } } : {}) };
+  const updated = await BookingModel.findOneAndUpdate({ _id: id, status: row.status, ...(manager ? {} : { userId: actorId }) },
+    { $set: cancellation },
     { returnDocument: "after" }).lean();
   if (!updated) throw new HttpError(409, "BOOKING_CHANGED", "รายการนี้ยกเลิกไม่ได้หรือสถานะเปลี่ยนแล้ว");
   return presentBooking(updated);

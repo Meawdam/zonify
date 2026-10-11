@@ -34,7 +34,7 @@ The live preview now uses the persistent zonify database, backend port 4000 and 
 
 ## Remaining verification
 
-Payments, ads and reports are not implemented yet and have no completed verification. Docker runtime, HTTPS cookie behavior through a real HTTPS proxy, backup/restore and full system concurrency checks remain for the later delivery phase. Human UAT and acceptance have not occurred and are not represented by automated tests.
+Ads and reports are not implemented yet and have no completed verification. Docker runtime, HTTPS cookie behavior through a real HTTPS proxy, backup/restore and broader system concurrency checks remain for the later delivery phase. Human UAT and acceptance have not occurred and are not represented by automated tests.
 
 
 ## Phase 3
@@ -53,3 +53,18 @@ Frontend lint and production build passed, including /bookings and /bookings/[id
 - No unhandled runtime errors or console warnings. Expected 404/409 and injected 503 responses were exercised deliberately. Desktop/mobile screenshots were visually inspected.
 
 Repeated QA runs reached the configured login rate limit; a fresh isolated backend was started and the final complete browser run passed without weakening the limiter. QA never wrote bookings to the persistent user database. The local preview was restored to the native persistent zonify database after QA.
+
+## Phase 4
+
+- Backend build passed; full isolated API suite passed 57 tests, zero failures (48 previous + 9 payments).
+- Frontend lint and production build passed after fixing browser-discovered validation/notice issues.
+- QR tests independently parsed Thai account/currency/amount tags and recalculated CRC-16. QR data URLs contain PNG images, price uses the booking snapshot, recipient stays fixed after initial issuance, and repeat issuance does not extend expiry. Missing/malformed recipient configuration returns 503 safely.
+- Upload tests exercised ownership/Origin, PNG/JPEG signatures and full decode, MIME mismatch, malformed multipart, invalid fields/references/precision, damaged images and 5 MB limits. Images are reencoded as JPEG, stored privately, and no binary/hash/password leaks into booking JSON. Only the customer owning that booking or a manager/owner can read an image.
+- Concurrent uploads produced one accepted attempt and one retained image. Review does not expire a reserved slot automatically. Approve/reject races have one winning transition; old-attempt reviews cannot approve new evidence. Wrong amount cannot be approved.
+- Concurrent approvals of different bookings using one transaction reference have one winner. Unique reference and image indexes prevent reusing accepted evidence even after paid cancellation. Cancellation creates a pending refund, and manual refund recording is authorized/idempotent with a retained reference.
+
+Browser plugin not available; installed Chrome with Playwright used isolated zonify_browser_phase4, desktop 1440×1000 and mobile 390×844. The completed flow was hold → confirm → QR → invalid file/future-time field errors → keyboard upload → reload → manager image/rejection → customer correction/upload → manager approval → customer confirmed state → paid cancellation → pending refund → manager refund record → customer refunded state. Cross-account private-image reads returned 404. No horizontal page overflow, blank page, framework overlay, unhandled runtime errors or console warnings in the final completed flow. Desktop review and mobile QR/review/refund screenshots were inspected.
+
+Browser QA found Chrome's HTML pattern uses Unicode v-mode and required changing the reference pattern; a stale customer submission notice after approval was also fixed by tying notices to the resulting status. Final workflow passed after both fixes.
+
+Automated checks used an explicitly synthetic PromptPay account and synthetic slip images. No funds were transferred; no bank app scan, live bank integration or actual bank verification is claimed. The persistent local environment has no receiving account configured; the operator must set PROMPTPAY_ID/PROMPTPAY_NAME and verify them before collecting real payments. Local preview was restored to persistent zonify after QA; payment evidence is included in MongoDB backups.

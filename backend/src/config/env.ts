@@ -10,4 +10,6 @@ export const env = {
   PORT: Number(process.env.BACKEND_PORT ?? 4000),
   MONGO_URI: required("MONGO_URI"), JWT_SECRET: secret,
   APP_ORIGIN: appOrigin, COOKIE_SECURE: appOrigin.startsWith("https://"),
+  PROMPTPAY_ID: (process.env.PROMPTPAY_ID ?? "").trim(),
+  PROMPTPAY_NAME: (process.env.PROMPTPAY_NAME ?? "").trim(),
 };

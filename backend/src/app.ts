@@ -11,6 +11,7 @@ import { requireOrigin } from "./middlewares/request-security.js";
 import catalogRouter from "./modules/catalog/catalog.route.js";
 import adminRouter from "./modules/admin/admin.route.js";
 import bookingRouter, { managerBookingRouter, managerHoldRouter } from "./modules/bookings/booking.route.js";
+import { paymentRouter, paymentAdminRouter } from "./modules/payments/payment.route.js";
 
 const app = express();
 
@@ -33,6 +34,8 @@ app.use(
 
 app.use("/api/users", userRouter);
 app.use("/api/bookings", bookingRouter);
+app.use("/api/bookings", paymentRouter);
+app.use("/api/admin/bookings", paymentAdminRouter);
 app.use("/api/admin/bookings", managerBookingRouter);
 app.use("/api/admin/holds", managerHoldRouter);
 app.use("/api/admin", adminRouter);

@@ -397,3 +397,24 @@ footer p { font-size: 11px; color: var(--muted); }
   .shop-detail dl > div { grid-template-columns: 1fr; gap: 6px; }
   .catalog-state { padding: 24px 18px; }
 }
+.payment-panel { margin-top: 24px; border-top: 1px solid var(--line); padding-top: 24px; }
+.payment-panel h3 { font-size: 21px; margin-bottom: 12px; }
+.payment-panel .form-description { margin-bottom: 16px; }
+.payment-qr { max-width: 360px; margin: 20px auto; padding: 16px; background: white; border: 1px solid #ded4c4; border-radius: 14px; text-align: center; }
+.payment-qr img { width: 100%; height: auto; }
+.payment-qr p { line-height: 1.8; margin-bottom: 12px; }
+.payment-form { margin-top: 18px; }
+.payment-form fieldset { display: grid; gap: 10px; min-width: 0; border: 1px solid #ded4c4; border-radius: 12px; padding: 18px; }
+.payment-form legend { font-weight: 700; padding: 0 8px; }
+.payment-form input:not([type="checkbox"]), .payment-form textarea { width: 100%; min-width: 0; padding: 12px; border: 1px solid #a9aaa0; border-radius: 8px; background: #fff; color: #174a4e; }
+.payment-form input[type="file"] { font-size: 14px; }
+.payment-form textarea { min-height: 100px; resize: vertical; }
+.payment-check { display: flex; align-items: flex-start; gap: 10px; line-height: 1.6; }
+.payment-check input { margin-top: 6px; flex-shrink: 0; }
+.payment-history { margin: 20px 0; }
+.payment-history summary { cursor: pointer; font-weight: 700; padding: 10px 0; }
+.payment-attempt { border-top: 1px solid #ded4c4; padding: 16px 0; overflow-wrap: anywhere; }
+.payment-attempt p { line-height: 1.7; }
+.payment-slip { display: block; width: 100%; max-width: 420px; height: auto; max-height: 560px; object-fit: contain; margin-top: 16px; background: #fff; border-radius: 8px; }
+.payment-refund { background: #fff1e7; border-radius: 12px; padding: 18px; margin-top: 20px; }
+.payment-panel .button { max-width: 100%; white-space: normal; }
