@@ -7,6 +7,7 @@ import { HttpError } from "../../middlewares/http-error.js";
 import { MarketModel, CategoryModel, ZoneModel, StallModel, ShopModel } from "../catalog/catalog.schema.js";
 import { slug } from "../catalog/catalog.service.js";
 import { adminListQuery, resourceFields, versionDto, type ResourceKind } from "./admin.dto.js";
+import { AdvertisementModel } from "../advertisements/advertisement.schema.js";
 
 const router = Router();
 router.use(authMiddleware, requireRole("manager", "owner"));
@@ -17,6 +18,10 @@ const present = (doc: object) => {
 };
 const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 async function referenceCheck(kind: ResourceKind, value: Record<string, unknown>) {
+  if (kind === "advertisements") {
+    if (String(value.endsOn) < String(value.startsOn)) throw new HttpError(400, "INVALID_AD_PERIOD", "วันสิ้นสุดต้องไม่น้อยกว่าวันเริ่มแสดงโฆษณา");
+    if (value.shopId && !await ShopModel.exists({ _id: String(value.shopId), marketId: String(value.marketId) })) throw new HttpError(400, "INVALID_SHOP", "ร้านที่โฆษณาต้องอยู่ในตลาดเดียวกัน");
+  }
   if ("marketId" in value && !await MarketModel.exists({ _id: String(value.marketId) }))
     throw new HttpError(400, "INVALID_MARKET", "ไม่พบตลาดที่เลือก");
   if (kind === "stalls" && value.zoneId) {
@@ -31,13 +36,14 @@ async function referenceCheck(kind: ResourceKind, value: Record<string, unknown>
   }
 }
 router.get("/references", async (_req, res) => {
-  const [markets, categories, zones, stalls] = await Promise.all([
+  const [markets, categories, zones, stalls, shops] = await Promise.all([
     MarketModel.find().sort({ order: 1, _id: 1 }).lean(),
     CategoryModel.find().sort({ order: 1, _id: 1 }).lean(),
     ZoneModel.find().sort({ order: 1, _id: 1 }).lean(),
     StallModel.find().sort({ marketId: 1, rowOrder: 1, column: 1 }).lean(),
+    ShopModel.find().sort({ name: 1, _id: 1 }).lean(),
   ]);
-  res.json({ markets: markets.map(present), categories: categories.map(present), zones: zones.map(present), stalls: stalls.map(present) });
+  res.json({ markets: markets.map(present), categories: categories.map(present), zones: zones.map(present), stalls: stalls.map(present), shops: shops.map(present) });
 });
 type ResourceRow = { _id: string; __v?: number; [key: string]: unknown };
 function install<T extends { _id: string }>(kind: ResourceKind, source: Model<T>) {
@@ -52,7 +58,7 @@ function install<T extends { _id: string }>(kind: ResourceKind, source: Model<T>
   router.get("/" + kind, async (req, res) => {
     const query = adminListQuery.parse(req.query);
     const filter = {
-      ...(query.market && ["zones", "stalls", "shops"].includes(kind) ? { marketId: query.market } : {}),
+      ...(query.market && ["zones", "stalls", "shops", "advertisements"].includes(kind) ? { marketId: query.market } : {}),
       ...(query.q ? { $or: [{ name: { $regex: escape(query.q), $options: "i" } }, { code: { $regex: escape(query.q), $options: "i" } }] } : {}),
     };
     const [items, total] = await Promise.all([
@@ -97,4 +103,5 @@ function install<T extends { _id: string }>(kind: ResourceKind, source: Model<T>
 }
 install("markets", MarketModel); install("categories", CategoryModel);
 install("zones", ZoneModel); install("stalls", StallModel); install("shops", ShopModel);
+install("advertisements", AdvertisementModel);
 export default router;

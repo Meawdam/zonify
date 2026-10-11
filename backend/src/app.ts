@@ -12,6 +12,8 @@ import catalogRouter from "./modules/catalog/catalog.route.js";
 import adminRouter from "./modules/admin/admin.route.js";
 import bookingRouter, { managerBookingRouter, managerHoldRouter } from "./modules/bookings/booking.route.js";
 import { paymentRouter, paymentAdminRouter } from "./modules/payments/payment.route.js";
+import advertisementRouter from "./modules/advertisements/advertisement.route.js";
+import { reportAdminRouter, reportOwnerRouter } from "./modules/reports/report.route.js";
 
 const app = express();
 
@@ -39,7 +41,10 @@ app.use("/api/admin/bookings", paymentAdminRouter);
 app.use("/api/admin/bookings", managerBookingRouter);
 app.use("/api/admin/holds", managerHoldRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/admin", reportAdminRouter);
+app.use("/api/owner", reportOwnerRouter);
 app.use("/api", catalogRouter);
+app.use("/api", advertisementRouter);
 
 app.use(errorHandler);
 

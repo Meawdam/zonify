@@ -4,7 +4,7 @@ const security = [{ cookieAuth: [] }];
 const json = (schema: object) => ({ "application/json": { schema } });
 const failure = Object.fromEntries([400, 401, 403, 404, 409].map(status => [status, { description: ({ 400: "Invalid fields or foreign references", 401: "Session required", 403: "Manager/owner role and matching Origin required", 404: "Resource not found", 409: "Duplicate ID/code/position or stale version" } as Record<number, string>)[status], content: json({ $ref: "#/components/schemas/Error" }) }]));
 export const adminPaths: Record<string, object> = {
-  "/api/admin/references": { get: { summary: "All catalog references, including inactive records (manager/owner)", security, responses: { 200: { description: "markets, categories, zones and stalls arrays; each row has id and version" }, ...failure } } },
+  "/api/admin/references": { get: { summary: "All catalog references, including inactive records (manager/owner)", security, responses: { 200: { description: "markets, categories, zones, stalls and shops arrays; each row has id and version" }, ...failure } } },
 };
 for (const [kind, fields] of Object.entries(resourceFields)) {
   const schema = z.toJSONSchema(fields);

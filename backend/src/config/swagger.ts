@@ -2,6 +2,7 @@ import { catalogPaths, catalogSchemas } from "../modules/catalog/catalog.openapi
 import { adminPaths } from "../modules/admin/admin.openapi.js";
 import { bookingPaths, bookingSchemas } from "../modules/bookings/booking.openapi.js";
 import { paymentPaths, paymentSchemas } from "../modules/payments/payment.openapi.js";
+import { reportPaths } from "../modules/reports/report.openapi.js";
 const string = { type: "string" };
 const user = { type: "object", required: ["id", "name", "email", "phone", "role"], properties: {
   id: string, name: string, email: { type: "string", format: "email" }, phone: string,
@@ -30,6 +31,7 @@ export const swaggerSpec = {
     ...adminPaths,
     ...bookingPaths,
     ...paymentPaths,
+    ...reportPaths,
     "/api/users": {
       post: { summary: "Register a customer (role fields rejected)", requestBody: body({ name: string, email, password }), responses: responses(201, user) },
       get: { summary: "List users (manager/owner)", security, responses: responses(200, { type: "array", items: user }) },

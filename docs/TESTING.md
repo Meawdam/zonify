@@ -34,7 +34,7 @@ The live preview now uses the persistent zonify database, backend port 4000 and 
 
 ## Remaining verification
 
-Ads and reports are not implemented yet and have no completed verification. Docker runtime, HTTPS cookie behavior through a real HTTPS proxy, backup/restore and broader system concurrency checks remain for the later delivery phase. Human UAT and acceptance have not occurred and are not represented by automated tests.
+Docker runtime, HTTPS cookie behavior through a real HTTPS proxy, backup/restore and final delivery checks remain for Phase 6. Human UAT and acceptance have not occurred and are not represented by automated tests.
 
 
 ## Phase 3
@@ -68,3 +68,15 @@ Browser plugin not available; installed Chrome with Playwright used isolated zon
 Browser QA found Chrome's HTML pattern uses Unicode v-mode and required changing the reference pattern; a stale customer submission notice after approval was also fixed by tying notices to the resulting status. Final workflow passed after both fixes.
 
 Automated checks used an explicitly synthetic PromptPay account and synthetic slip images. No funds were transferred; no bank app scan, live bank integration or actual bank verification is claimed. The persistent local environment has no receiving account configured; the operator must set PROMPTPAY_ID/PROMPTPAY_NAME and verify them before collecting real payments. Local preview was restored to persistent zonify after QA; payment evidence is included in MongoDB backups.
+
+## Phase 5
+
+Backend build passed. Full isolated API suite passed 66 tests, zero failures (57 previous + 9 advertisements/reports). Frontend lint and production build passed.
+
+- Advertisements: role/Origin checks, actual calendar dates, inclusive Bangkok display boundaries, market/shop/category visibility, foreign references, immutable market IDs, version races, soft deactivation and seeds preserving edited/disabled records.
+- Reports: current database roles, manager denied owner finance JSON/CSV, booking-date/status grouping, expired hold cleanup, price snapshots, exact cent totals, payment/refund dates independent from booking dates, Thai midnight boundaries, negative daily net, monthly/market grouping and outstanding refunds from all dates.
+- Dashboard matches public visibility and floor counts; unpaid bookings do not become received revenue. Invalid/overlong ranges return 400. Empty reports have zero totals. Private aggregate JSON/CSV contain no contact details, hashes or slip data. CSV protects formula-like strings while keeping legitimate negative numeric values numeric.
+
+Installed Chrome with Playwright used isolated zonify_browser_phase5. Desktop 1440×1000 and mobile 390×844 passed keyboard advertisement creation → public card/shop deep link → edit → mobile display → deactivation. Dashboard filters and totals passed; an injected 503 hid stale results and retry restored them. Manager booking CSV actually downloaded, finance controls were absent and direct finance calls returned 403. Owner selected monthly financial reports by keyboard and downloaded the expected CSV; customer report calls returned 403. Final workflow had no document overflow, framework overlay, unhandled runtime errors or console warnings. Desktop dashboard/public ads and mobile ads/owner-report screenshots were visually inspected.
+
+QA found that image preloading issued an unused-preload warning after resizing from desktop to mobile. The hero now uses eager loading with high fetch priority; the final browser run passed. Summary-tab navigation also clears unrelated catalog success notices. Synthetic received/refund records were confined to the isolated QA database; no money moved and no customer database financial history was seeded.

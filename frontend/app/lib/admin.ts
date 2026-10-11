@@ -1,10 +1,10 @@
 import { ApiError } from "./auth";
-export type AdminKind = "markets" | "categories" | "zones" | "stalls" | "shops";
+export type AdminKind = "markets" | "categories" | "zones" | "stalls" | "shops" | "advertisements";
 export type AdminRow = { id: string; version: number; [key: string]: string | number | boolean | null };
-export type AdminReferences = Record<"markets" | "categories" | "zones" | "stalls", AdminRow[]>;
+export type AdminReferences = Record<"markets" | "categories" | "zones" | "stalls" | "shops", AdminRow[]>;
 export type AdminResults = { items: AdminRow[]; total: number; page: number; pages: number };
-export const adminLabels: Record<AdminKind, string> = { markets: "ตลาด", categories: "หมวดหมู่", zones: "โซน", stalls: "ล็อก", shops: "ร้านค้า" };
-export type Field = { key: string; label: string; type: "text" | "textarea" | "number" | "select" | "checkbox"; optional?: boolean; min?: number; max?: number; step?: number };
+export const adminLabels: Record<AdminKind, string> = { markets: "ตลาด", categories: "หมวดหมู่", zones: "โซน", stalls: "ล็อก", shops: "ร้านค้า", advertisements: "โฆษณา" };
+export type Field = { key: string; label: string; type: "text" | "textarea" | "number" | "select" | "checkbox" | "date"; optional?: boolean; min?: number; max?: number; step?: number };
 const name: Field = { key: "name", label: "ชื่อ", type: "text", max: 100 };
 const description: Field = { key: "description", label: "คำอธิบาย", type: "textarea", optional: true, max: 2000 };
 const market: Field = { key: "marketId", label: "ตลาด", type: "select" };
@@ -16,6 +16,8 @@ export const adminFields: Record<AdminKind, Field[]> = {
   zones: [market, name, description, order, active],
   stalls: [market, { key: "zoneId", label: "โซน", type: "select", optional: true }, { key: "code", label: "รหัสล็อก", type: "text", max: 100 }, { key: "row", label: "ชื่อแถว", type: "text", max: 20 }, { key: "rowOrder", label: "ตำแหน่งแถว (เริ่มที่ 0)", type: "number", min: 0, max: 100 }, { key: "column", label: "ตำแหน่งคอลัมน์ (เริ่มที่ 1)", type: "number", min: 1, max: 30 }, { key: "width", label: "ความกว้าง (เมตร)", type: "number", min: 0.1, max: 100, step: 0.1 }, { key: "depth", label: "ความลึก (เมตร)", type: "number", min: 0.1, max: 100, step: 0.1 }, { key: "pricePerDay", label: "ค่าเช่ารายวัน (บาท)", type: "number", min: 0, max: 1000000, step: 0.01 }, description, { key: "enabled", label: "เปิดใช้งานล็อก", type: "checkbox" }],
   shops: [market, name, { key: "categoryId", label: "หมวดหมู่", type: "select" }, { key: "stallId", label: "ล็อกของร้าน", type: "select", optional: true }, description, { key: "hours", label: "เวลาเปิดร้าน", type: "text", optional: true, max: 100 }, active],
+  advertisements: [market, name, { key: "shopId", label: "ร้านที่ประชาสัมพันธ์", type: "select", optional: true }, description,
+    { key: "startsOn", label: "วันเริ่มแสดง", type: "date" }, { key: "endsOn", label: "วันสิ้นสุด (รวมวันสิ้นสุด)", type: "date" }, { key: "photo", label: "ภาพประกอบ", type: "select" }, order, active],
 };
 export function defaults(kind: AdminKind, marketId: string) {
   const values: AdminRow = { id: "", version: 0 };
@@ -23,6 +25,10 @@ export function defaults(kind: AdminKind, marketId: string) {
   if ("marketId" in values) values.marketId = marketId;
   if (kind === "markets") { values.photo = "canal"; values.entrance = "ทางเข้า"; }
   if (kind === "stalls") { values.width = 2; values.depth = 2; }
+  if (kind === "advertisements") {
+    const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    values.startsOn = today; values.endsOn = new Date(new Date(today + "T00:00:00Z").valueOf() + 7 * 86400_000).toISOString().slice(0, 10); values.photo = "canal";
+  }
   return values;
 }
 export async function adminRequest<T>(path: string, method: string, body?: unknown): Promise<T> {

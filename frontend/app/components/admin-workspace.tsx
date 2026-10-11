@@ -6,9 +6,10 @@ import { usePublicData } from "../lib/use-public-data";
 import { StallPlan } from "./stall-plan";
 import { baht, type FloorPlan } from "../lib/catalog";
 import { BookingList } from "./booking-workspace";
+import { Dashboard, Reports } from "./report-workspace";
 
-export function AdminWorkspace({ user }: { user: User }) {
-  const [tab, setTab] = useState<AdminKind | "floor" | "users" | "bookings" | "holds" | "payments">("markets");
+export function AdminWorkspace({ user, today }: { user: User; today: string }) {
+  const [tab, setTab] = useState<AdminKind | "floor" | "users" | "bookings" | "holds" | "payments" | "dashboard" | "reports">("markets");
   const refs = usePublicData<AdminReferences>("/api/admin/references", 0, true);
   const [notice, setNotice] = useState("");
   function refresh() { refs.retry(); }
@@ -16,8 +17,9 @@ export function AdminWorkspace({ user }: { user: User }) {
     <nav className="admin-tabs" aria-label="เมนูจัดการ">{(Object.keys(adminLabels) as AdminKind[]).map(kind => <button key={kind} aria-current={tab === kind ? "page" : undefined} onClick={() => { setTab(kind); setNotice(""); }}>{adminLabels[kind]}</button>)}<button aria-current={tab === "floor" ? "page" : undefined} onClick={() => { setTab("floor"); setNotice(""); }}>จัดผังล็อก</button><button aria-current={tab === "users" ? "page" : undefined} onClick={() => { setTab("users"); setNotice(""); }}>ผู้ใช้</button></nav>
     <nav className="admin-tabs" aria-label="เมนูรายการจอง"><button aria-current={tab === "bookings" ? "page" : undefined} onClick={() => { setTab("bookings"); setNotice(""); }}>รายการจอง</button><button aria-current={tab === "holds" ? "page" : undefined} onClick={() => { setTab("holds"); setNotice(""); }}>พักล็อก</button><button aria-current={tab === "payments" ? "page" : undefined} onClick={() => { setTab("payments"); setNotice(""); }}>ตรวจชำระเงิน</button></nav>
     {notice && <p className="form-notice" role="status">{notice}</p>}
+    <nav className="admin-tabs" aria-label="เมนูสรุปผล"><button aria-current={tab === "dashboard" ? "page" : undefined} onClick={() => { setTab("dashboard"); setNotice(""); }}>Dashboard</button><button aria-current={tab === "reports" ? "page" : undefined} onClick={() => { setTab("reports"); setNotice(""); }}>รายงาน</button></nav>
     {refs.loading && !refs.data ? <p className="catalog-state" role="status">กำลังโหลดข้อมูลจัดการ…</p> : refs.error ? <p className="catalog-state" role="alert">{refs.error} <button className="text-link" onClick={refs.retry}>ลองใหม่</button></p> : refs.data && <>
-      {tab === "bookings" || tab === "holds" || tab === "payments" ? <BookingList key={tab} manager holdsOnly={tab === "holds"} defaultStatus={tab === "payments" ? "payment_review" : ""}/> : tab === "users" ? <UserList key="users" user={user}/> : tab === "floor" ? <FloorEditor key="floor" refs={refs.data} onChange={refresh}/> : <ResourcePanel key={tab} kind={tab} refs={refs.data} onChange={refresh} onNotice={setNotice}/>}
+      {tab === "dashboard" ? <Dashboard today={today} markets={refs.data.markets}/> : tab === "reports" ? <Reports today={today} markets={refs.data.markets} owner={user.role === "owner"}/> : tab === "bookings" || tab === "holds" || tab === "payments" ? <BookingList key={tab} manager holdsOnly={tab === "holds"} defaultStatus={tab === "payments" ? "payment_review" : ""}/> : tab === "users" ? <UserList key="users" user={user}/> : tab === "floor" ? <FloorEditor key="floor" refs={refs.data} onChange={refresh}/> : <ResourcePanel key={tab} kind={tab} refs={refs.data} onChange={refresh} onNotice={setNotice}/>}
     </>}
   </div>;
 }
@@ -43,7 +45,7 @@ function ResourcePanel({ kind, refs, onChange, onNotice }: { kind: AdminKind; re
     <div className="admin-section-heading"><div><h2>{adminLabels[kind]}</h2><p>เพิ่ม แก้ไข และปิดใช้งานข้อมูล</p></div><button className="button button-green" onClick={() => { onNotice(""); setEditor(defaults(kind, marketId || refs.markets[0]?.id || "")); }}>เพิ่ม{adminLabels[kind]}</button></div>
     <form className="admin-filters" onSubmit={e => { e.preventDefault(); setQuery(search); setPage(1); }}>
       <label>ค้นหาชื่อหรือรหัส<input value={search} onChange={e => setSearch(e.target.value)} maxLength={100}/></label>
-      {["zones", "stalls", "shops"].includes(kind) && <label>ตลาด<select aria-label="ตลาด" value={marketId} onChange={e => { setMarket(e.target.value); setPage(1); }}><option value="">ทุกตลาด</option>{refs.markets.map(m => <option key={m.id} value={m.id}>{m.name}{!m.active ? " (ปิดแสดง)" : ""}</option>)}</select></label>}
+      {["zones", "stalls", "shops", "advertisements"].includes(kind) && <label>ตลาด<select aria-label="ตลาด" value={marketId} onChange={e => { setMarket(e.target.value); setPage(1); }}><option value="">ทุกตลาด</option>{refs.markets.map(m => <option key={m.id} value={m.id}>{m.name}{!m.active ? " (ปิดแสดง)" : ""}</option>)}</select></label>}
       <button className="button button-white" type="submit">ค้นหา</button><button className="text-link" type="button" onClick={result.retry}>โหลดใหม่</button>
     </form>
     {error && <p className="form-alert" role="alert">{error}</p>}
@@ -62,6 +64,7 @@ function summary(kind: AdminKind, row: AdminRow, refs: AdminReferences) {
   if (kind === "markets") return row.location;
   if (kind === "categories") return "ลำดับ " + row.order;
   const market = refs.markets.find(m => m.id === row.marketId)?.name ?? row.marketId;
+  if (kind === "advertisements") return market + " • " + row.startsOn + " ถึง " + row.endsOn;
   if (kind === "zones") return market;
   if (kind === "stalls") return market + " • " + row.width + " × " + row.depth + " ม. • " + baht(Number(row.pricePerDay)) + " บาท/วัน • แถว " + row.rowOrder + " คอลัมน์ " + row.column;
   return market + " • " + (refs.categories.find(c => c.id === row.categoryId)?.name ?? "");
@@ -75,7 +78,7 @@ function ResourceEditor({ kind, initial, refs, onClose, onSaved }: { kind: Admin
   const editing = !!initial.id;
   function options(key: string): Array<{ id: string; name: string }> {
     if (key === "photo") return [{ id: "canal", name: "ริมน้ำ" }, { id: "community", name: "ชุมชน" }, { id: "sunday", name: "ถนนคนเดิน" }];
-    const rows = key === "marketId" ? refs.markets : key === "categoryId" ? refs.categories : key === "zoneId" ? refs.zones.filter(z => z.marketId === values.marketId) : refs.stalls.filter(s => s.marketId === values.marketId);
+    const rows = key === "marketId" ? refs.markets : key === "categoryId" ? refs.categories : key === "shopId" ? refs.shops.filter(s => s.marketId === values.marketId) : key === "zoneId" ? refs.zones.filter(z => z.marketId === values.marketId) : refs.stalls.filter(s => s.marketId === values.marketId);
     return rows.map(row => ({ id: row.id, name: String(row.name ?? row.code) + (row.active === false || row.enabled === false ? " (ปิดใช้งาน)" : "") }));
   }
   async function submit(e: FormEvent) {
@@ -84,7 +87,7 @@ function ResourceEditor({ kind, initial, refs, onClose, onSaved }: { kind: Admin
     for (const field of adminFields[kind]) {
       if (editing && field.key === "marketId") continue;
       const value = values[field.key];
-      body[field.key] = ["zoneId", "stallId"].includes(field.key) && !value ? null : value;
+      body[field.key] = ["zoneId", "stallId", "shopId"].includes(field.key) && !value ? null : value;
     }
     if (editing) body.version = initial.version;
     try { await adminRequest("/" + kind + (editing ? "/" + initial.id : ""), editing ? "PATCH" : "POST", body); onSaved(); }
@@ -102,7 +105,7 @@ function ResourceEditor({ kind, initial, refs, onClose, onSaved }: { kind: Admin
       const id = "admin-" + kind + "-" + field.key;
       const common = { id, name: field.key, "aria-invalid": !!errors[field.key], "aria-describedby": errors[field.key] ? id + "-error" : undefined };
       const value = values[field.key];
-      const change = (next: string | number | boolean) => setValues(v => ({ ...v, [field.key]: next, ...(field.key === "marketId" ? { zoneId: "", stallId: "" } : {}) }));
+      const change = (next: string | number | boolean) => setValues(v => ({ ...v, [field.key]: next, ...(field.key === "marketId" ? { zoneId: "", stallId: "", shopId: "" } : {}) }));
       return <div className={"form-field " + (field.type === "textarea" ? "wide" : "")} key={field.key}>
         {field.type === "checkbox" ? <label className="admin-checkbox"><input {...common} type="checkbox" checked={!!value} onChange={e => change(e.target.checked)}/>{field.label}</label> : <>
           <label htmlFor={id}>{field.label}{field.optional ? " (ไม่จำเป็น)" : ""}</label>

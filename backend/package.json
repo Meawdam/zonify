@@ -10,7 +10,8 @@
     "test": "tsx --test tests/*.test.ts",
     "migrate:auth": "tsx src/scripts/prepare-auth.ts",
     "seed:auth": "tsx src/scripts/seed-auth.ts",
-    "seed:catalog": "tsx src/scripts/seed-catalog.ts"
+    "seed:catalog": "tsx src/scripts/seed-catalog.ts",
+    "seed:ads": "tsx src/scripts/seed-ads.ts"
   },
   "keywords": [],
   "author": "",

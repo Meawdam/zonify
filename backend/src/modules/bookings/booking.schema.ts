@@ -37,6 +37,9 @@ bookingSchema.index({ status: 1, expiresAt: 1 });
 bookingSchema.index({ userId: 1, createdAt: -1, _id: 1 });
 bookingSchema.index({ approvedReference: 1 }, { unique: true, partialFilterExpression: { approvedReference: { $type: "string" } } });
 bookingSchema.index({ approvedSlipHash: 1 }, { unique: true, partialFilterExpression: { approvedSlipHash: { $type: "string" } } });
+bookingSchema.index({ date: 1, marketId: 1, status: 1 });
+bookingSchema.index({ paidAt: 1, marketId: 1 });
+bookingSchema.index({ "refund.completedAt": 1, marketId: 1 });
 export const BookingModel = mongoose.model("Booking", bookingSchema);
 export type BookingRecord = NonNullable<Awaited<ReturnType<typeof BookingModel.findOne>>>;
 // History is retained. No TTL deletion of booking records.

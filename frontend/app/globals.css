@@ -418,3 +418,34 @@ footer p { font-size: 11px; color: var(--muted); }
 .payment-slip { display: block; width: 100%; max-width: 420px; height: auto; max-height: 560px; object-fit: contain; margin-top: 16px; background: #fff; border-radius: 8px; }
 .payment-refund { background: #fff1e7; border-radius: 12px; padding: 18px; margin-top: 20px; }
 .payment-panel .button { max-width: 100%; white-space: normal; }
+.advertisement-section { padding-top: 48px; padding-bottom: 64px; }
+.advertisement-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin-top: 24px; }
+.advertisement-card { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #fffdf8; }
+.advertisement-card .market-image { border-radius: 0; height: 200px; }
+.advertisement-copy { padding: 22px; }
+.advertisement-copy > span { font-size: 12px; color: var(--muted); }
+.advertisement-copy h3 { font-size: 23px; margin: 10px 0; overflow-wrap: anywhere; }
+.advertisement-copy p { line-height: 1.7; margin-bottom: 16px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.report-workspace h3 { font-size: 24px; margin-top: 28px; margin-bottom: 12px; }
+.report-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 24px 0; }
+.report-cards > div { border: 1px solid var(--line); background: #fffdf8; border-radius: 12px; padding: 20px; }
+.report-cards dt { color: var(--muted); font-size: 14px; }
+.report-cards dd { font-size: 27px; font-weight: 700; margin-top: 12px; overflow-wrap: anywhere; }
+.report-type { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+.report-type button[aria-pressed="true"] { background: var(--green); color: white; }
+.report-export { display: inline-block; margin: 12px 0; }
+.report-trend { border: 1px solid var(--line); border-radius: 12px; padding: 24px; margin: 24px 0; }
+.report-trend h3 { margin-top: 0; font-size: 20px; }
+.report-trend li { display: grid; grid-template-columns: 100px minmax(0, 1fr) 130px; align-items: center; gap: 16px; margin: 12px 0; font-size: 13px; }
+.report-trend strong { text-align: right; }
+.report-track { height: 12px; background: #ece8dd; border-radius: 8px; overflow: hidden; }
+.report-track span { display: block; height: 100%; background: var(--green); border-radius: 8px; }
+.report-track .negative { background: #b25936; }
+@media (max-width: 760px) {
+  .advertisement-grid { grid-template-columns: 1fr; }
+  .report-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .report-cards > div { padding: 14px; }
+  .report-cards dd { font-size: 23px; }
+  .report-trend { padding: 16px; }
+  .report-trend li { grid-template-columns: 86px minmax(0, 1fr) 85px; gap: 8px; font-size: 12px; }
+}
