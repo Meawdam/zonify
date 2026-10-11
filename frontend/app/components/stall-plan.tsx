@@ -4,7 +4,7 @@ import { Icon } from "./icons";
 import { statusLabels, type FloorPlan } from "../lib/catalog";
 export function StallPlan({ plan, selected, onSelect }: { plan: FloorPlan; selected: string | null; onSelect: (id: string) => void }) {
   const [zoom, setZoom] = useState(100);
-  const rows = [...new Set(plan.stalls.map(s => s.rowOrder))];
+  const rows = Array.from({ length: Math.max(-1, ...plan.stalls.map(s => s.rowOrder)) + 1 }, (_, i) => i);
   const columns = Math.max(1, ...plan.stalls.map(s => s.column));
   return <div className="plan-card live-map">
     <div className="map-controls">
@@ -15,8 +15,8 @@ export function StallPlan({ plan, selected, onSelect }: { plan: FloorPlan; selec
       {rows.map((rowOrder, index) => {
         const stalls = plan.stalls.filter(s => s.rowOrder === rowOrder);
         return <div className="map-row" key={rowOrder}>
-          <div className="slot-row" style={{ gridTemplateColumns: `25px repeat(${columns}, minmax(48px, 1fr))` }}>
-            <span className="row-label">{stalls[0]?.row}</span>
+          <div className="slot-row" style={{ minHeight: 58, gridTemplateColumns: `25px repeat(${columns}, minmax(48px, 1fr))` }}>
+            <span className="row-label">{stalls[0]?.row ?? "·"}</span>
             {stalls.map(stall => <button key={stall.id} style={{ gridColumn: stall.column + 1 }}
               className={`slot ${stall.status}${selected === stall.id ? " selected" : ""}`}
               aria-label={`ล็อก ${stall.code} ${statusLabels[stall.status]}`} aria-pressed={selected === stall.id}

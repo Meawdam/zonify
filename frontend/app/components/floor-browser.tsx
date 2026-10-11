@@ -22,6 +22,7 @@ export function FloorBrowser({ market, date, initialStall }: { market: Market; d
           <div className="detail-row"><Icon name="area"/><div><strong>{selected.width} × {selected.depth} เมตร</strong><span>ขนาดพื้นที่</span></div></div>
           <div className="detail-row"><Icon name="coin"/><div><strong>{baht(selected.pricePerDay)} บาท / วัน</strong><span>ค่าเช่าพื้นที่</span></div></div>
           <p className="stall-description">{selected.description}</p>
+          {selected.zoneName && <p className="stall-description">{selected.zoneName}</p>}
           {selected.holdExpiresAt && <p className="map-hint">พักล็อกถึง {new Intl.DateTimeFormat("th-TH", { dateStyle: "short", timeStyle: "short", timeZone: "Asia/Bangkok" }).format(new Date(selected.holdExpiresAt))}</p>}
         </> : <p className="stall-description">ดูข้อมูลได้ทั้งล็อกว่าง ล็อกจองแล้ว และล็อกที่ปิดใช้งาน</p>}
         <p className="catalog-note">การเลือกล็อกเป็นการดูข้อมูล ยังไม่ใช่การจอง</p>

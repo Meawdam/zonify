@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 type Result<T> = { key: string; data: T | null; error: string };
-export function usePublicData<T>(url: string | null, pollMs = 0) {
+export function usePublicData<T>(url: string | null, pollMs = 0, keepPrevious = false) {
   const [attempt, setAttempt] = useState(0);
   const key = url + "|" + attempt;
   const [result, setResult] = useState<Result<T> | null>(null);
@@ -28,5 +28,5 @@ export function usePublicData<T>(url: string | null, pollMs = 0) {
     return () => { controller.abort(); if (timer) clearInterval(timer); window.removeEventListener("focus", refreshVisible); };
   }, [url, key, pollMs]);
   const current = result?.key === key ? result : null;
-  return { data: current?.data ?? null, error: current?.error ?? "", loading: !!url && !current, retry: () => setAttempt(n => n + 1) };
+  return { data: current ? current.data : keepPrevious ? result?.data ?? null : null, error: current?.error ?? "", loading: !!url && !current, retry: () => setAttempt(n => n + 1) };
 }

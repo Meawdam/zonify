@@ -1,4 +1,5 @@
 import { catalogPaths, catalogSchemas } from "../modules/catalog/catalog.openapi.js";
+import { adminPaths } from "../modules/admin/admin.openapi.js";
 const string = { type: "string" };
 const user = { type: "object", required: ["id", "name", "email", "phone", "role"], properties: {
   id: string, name: string, email: { type: "string", format: "email" }, phone: string,
@@ -24,6 +25,7 @@ export const swaggerSpec = {
   components: { schemas: { User: user, Error: error, ...catalogSchemas }, securitySchemes: { cookieAuth: { type: "apiKey", in: "cookie", name: "zonify_session" } } },
   paths: {
     ...catalogPaths,
+    ...adminPaths,
     "/api/users": {
       post: { summary: "Register a customer (role fields rejected)", requestBody: body({ name: string, email, password }), responses: responses(201, user) },
       get: { summary: "List users (manager/owner)", security, responses: responses(200, { type: "array", items: user }) },

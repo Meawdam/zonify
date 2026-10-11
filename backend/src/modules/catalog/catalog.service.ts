@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { MarketModel, CategoryModel, StallModel, StallDayStateModel, ShopModel } from "./catalog.schema.js";
+import { MarketModel, CategoryModel, ZoneModel, StallModel, StallDayStateModel, ShopModel } from "./catalog.schema.js";
 import { HttpError } from "../../middlewares/http-error.js";
 export function bangkokDate(now = new Date()) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
@@ -20,7 +20,12 @@ const marketPublic = (m: { _id: string; name: string; location: string; descript
 export async function listMarkets() {
   const [markets, prices] = await Promise.all([
     MarketModel.find({ active: true }).sort({ order: 1, _id: 1 }).lean(),
-    StallModel.aggregate<{ _id: string; price: number }>([{ $match: { enabled: true } }, { $group: { _id: "$marketId", price: { $min: "$pricePerDay" } } }]),
+    StallModel.aggregate<{ _id: string; price: number }>([
+      { $match: { enabled: true } },
+      { $lookup: { from: ZoneModel.collection.name, localField: "zoneId", foreignField: "_id", as: "zone" } },
+      { $match: { $or: [{ zoneId: null }, { "zone.active": true }] } },
+      { $group: { _id: "$marketId", price: { $min: "$pricePerDay" } } },
+    ]),
   ]);
   const byId = new Map(prices.map(p => [p._id, p.price]));
   return { items: markets.map(m => ({ ...marketPublic(m), minPrice: byId.get(m._id) ?? null })) };
@@ -31,20 +36,26 @@ export async function listCategories() {
 export async function floorPlan(marketId: string, date: string, now = new Date()) {
   const market = await MarketModel.findOne({ _id: marketId, active: true }).lean();
   if (!market) throw new HttpError(404, "MARKET_NOT_FOUND", "ไม่พบตลาดนี้");
-  const stalls = await StallModel.find({ marketId }).sort({ rowOrder: 1, column: 1, code: 1 }).lean();
+  const [stalls, zones] = await Promise.all([
+    StallModel.find({ marketId }).sort({ rowOrder: 1, column: 1, code: 1 }).lean(),
+    ZoneModel.find({ marketId }).sort({ order: 1, _id: 1 }).lean(),
+  ]);
+  const zonesById = new Map(zones.map(z => [z._id, z]));
   const states = await StallDayStateModel.find({ stallId: { $in: stalls.map(s => s._id) }, date }).lean();
   const byId = new Map(states.map(s => [s.stallId, s]));
   const counts = { available: 0, booked: 0, held: 0, unavailable: 0 };
   const items = stalls.map(s => {
     const state = byId.get(s._id);
-    let status: keyof typeof counts = s.enabled ? "available" : "unavailable";
-    if (s.enabled && state) {
+    const enabled = s.enabled && (!s.zoneId || zonesById.get(s.zoneId)?.active === true);
+    let status: keyof typeof counts = enabled ? "available" : "unavailable";
+    if (enabled && state) {
       // An invalid hold without an expiry fails closed. Expired holds are never shown as active.
       status = state.status === "held" && state.expiresAt && state.expiresAt <= now ? "available" : state.status;
     }
     counts[status]++;
     return { id: s._id, code: s.code, row: s.row, rowOrder: s.rowOrder, column: s.column,
       width: s.width, depth: s.depth, pricePerDay: s.pricePerDay, description: s.description,
+      zoneId: s.zoneId ?? null, zoneName: s.zoneId ? zonesById.get(s.zoneId)?.name ?? null : null,
       status, holdExpiresAt: status === "held" ? state?.expiresAt?.toISOString() ?? null : null };
   });
   return { market: marketPublic(market), date, updatedAt: now.toISOString(), counts, stalls: items };

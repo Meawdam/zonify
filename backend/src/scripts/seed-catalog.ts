@@ -1,7 +1,7 @@
 import "dotenv/config";
 import mongoose from "mongoose";
 import { pathToFileURL } from "node:url";
-import { MarketModel, CategoryModel, StallModel, StallDayStateModel, ShopModel, ensureCatalogIndexes } from "../modules/catalog/catalog.schema.js";
+import { MarketModel, CategoryModel, ZoneModel, StallModel, StallDayStateModel, ShopModel, ensureCatalogIndexes } from "../modules/catalog/catalog.schema.js";
 import { bangkokDate, dateQuery } from "../modules/catalog/catalog.service.js";
 export async function seedCatalog(date = bangkokDate()) {
   dateQuery.parse(date);
@@ -16,10 +16,14 @@ export async function seedCatalog(date = bangkokDate()) {
   for (const [order, market] of markets.entries()) {
     await MarketModel.updateOne({ _id: market._id }, { $setOnInsert: { ...market, order, active: true } }, { upsert: true });
     const rows = market._id === "community" ? ["A", "B", "C"] : ["A", "B", "C", "D"];
-    for (const [rowOrder, row] of rows.entries()) for (let column = 1; column <= 6; column++) {
+    for (const [rowOrder, row] of rows.entries()) {
+      const zoneId = market._id + "-zone-" + row;
+      await ZoneModel.updateOne({ _id: zoneId }, { $setOnInsert: { marketId: market._id, name: row === "A" ? "โซนทางเข้า" : "โซน " + row, description: "", order: rowOrder, active: true } }, { upsert: true });
+      for (let column = 1; column <= 6; column++) {
       const code = row + String(column).padStart(2, "0");
       const _id = market._id + "-" + code;
-      await StallModel.updateOne({ _id }, { $setOnInsert: { _id, marketId: market._id, code, row, rowOrder, column, width: row === "A" ? 3 : 2, depth: 2, pricePerDay: 120 + order * 30 + (row === "A" ? 60 : 0), description: row === "A" ? "โซนใกล้ทางเข้า" : "พื้นที่ขายทั่วไป", enabled: code !== "C06" } }, { upsert: true });
+      await StallModel.updateOne({ _id }, { $setOnInsert: { _id, marketId: market._id, zoneId, code, row, rowOrder, column, width: row === "A" ? 3 : 2, depth: 2, pricePerDay: 120 + order * 30 + (row === "A" ? 60 : 0), description: row === "A" ? "โซนใกล้ทางเข้า" : "พื้นที่ขายทั่วไป", enabled: code !== "C06" } }, { upsert: true });
+      }
     }
   }
   const shops = [

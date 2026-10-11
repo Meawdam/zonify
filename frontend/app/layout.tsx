@@ -8,5 +8,5 @@ export const metadata: Metadata = {
   description: "เลือกตลาด ดูตำแหน่งล็อก และวางแผนพื้นที่ขายของคุณกับ Zonify",
 };
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return <html lang="th" className={thai.variable}><body>{children}</body></html>;
+  return <html lang="th" data-scroll-behavior="smooth" className={thai.variable}><body>{children}</body></html>;
 }

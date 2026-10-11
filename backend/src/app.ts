@@ -9,6 +9,7 @@ import { errorHandler } from "./middlewares/error-handler.js";
 import userRouter from "./modules/users/user.route.js"
 import { requireOrigin } from "./middlewares/request-security.js";
 import catalogRouter from "./modules/catalog/catalog.route.js";
+import adminRouter from "./modules/admin/admin.route.js";
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use(
 );
 
 app.use("/api/users", userRouter);
+app.use("/api/admin", adminRouter);
 app.use("/api", catalogRouter);
 
 app.use(errorHandler);
