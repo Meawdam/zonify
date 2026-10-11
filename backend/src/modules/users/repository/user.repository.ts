@@ -1,31 +1,12 @@
-import { UserModel } from "../schema/user.schema.js"
-import type { CreateUserDto } from "../dto/user.dto.js"
-
-export class userRepository {
-    async findAll() {
-        return UserModel.find().select("-password").lean();
-    }
-
-
-  async findById(id: string) {
-    return UserModel.findById(id).select("-password").lean();
+import { UserModel } from "../schema/user.schema.js";
+import type { CreateUserDto } from "../dto/user.dto.js";
+export class UserRepository {
+  findAll() { return UserModel.find().lean(); }
+  findById(id: string) { return UserModel.findById(id).lean(); }
+  findForLogin(email: string) { return UserModel.findOne({ email }).select("+password +authVersion"); }
+  create(data: CreateUserDto) { return UserModel.create({ ...data, role: "customer" }); }
+  updateProfile(id: string, data: { name: string; phone: string }) {
+    return UserModel.findByIdAndUpdate(id, { $set: data }, { returnDocument: "after", runValidators: true }).lean();
   }
-
-  async findByEmail(email: string) {
-    return UserModel.findOne({ email });
-  }
-
-  async create(data: CreateUserDto) {
-    const user = await UserModel.create(data);
-
-    return {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-    };
-  }
-
-  async deleteById(id: string) {
-    return UserModel.findByIdAndDelete(id);
-  }
+  deleteById(id: string) { return UserModel.findByIdAndDelete(id); }
 }

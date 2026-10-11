@@ -1,102 +1,47 @@
-import { Request, Response, NextFunction } from "express";
-import { AuthRequest } from "../../../middlewares/auth.middleware.js"
+import type { Request, Response } from "express";
+import type { AuthRequest } from "../../../middlewares/auth.middleware.js";
+import { HttpError } from "../../../middlewares/http-error.js";
 import { UserService } from "../service/user.service.js";
-import { createUserDto, loginUserDto } from "../dto/user.dto.js";
-
+import { createUserDto, loginUserDto, profileDto, changePasswordDto } from "../dto/user.dto.js";
+import { issueSession, cookieToken, verifyToken, clearSessionCookie } from "../session.js";
+import { SessionModel } from "../schema/session.schema.js";
+const idParam = (req: Request) => {
+  const id = req.params.id;
+  if (typeof id !== "string") throw new HttpError(400, "INVALID_ID", "รหัสผู้ใช้ไม่ถูกต้อง");
+  return id;
+};
 export class UserController {
-  private readonly userService: UserService;
-
-  constructor() {
-    this.userService = new UserService();
-  }
-
-  getAll = async (_req: Request, res: Response, next: NextFunction) => {
-    try {
-      const users = await this.userService.getAll();
-
-      return res.status(200).json(users);
-    } catch (error) {
-      next(error);
-    }
+  private readonly service = new UserService();
+  getAll = async (_req: Request, res: Response) => { res.json(await this.service.getAll()); };
+  getById = async (req: Request, res: Response) => { res.json(await this.service.getById(idParam(req))); };
+  getMe = async (req: AuthRequest, res: Response) => { res.json(req.user); };
+  create = async (req: Request, res: Response) => { res.status(201).json(await this.service.create(createUserDto.parse(req.body))); };
+  login = async (req: Request, res: Response) => {
+    const result = await this.service.login(loginUserDto.parse(req.body));
+    const previous = cookieToken(req);
+    const payload = previous ? verifyToken(previous) : null;
+    if (payload) await SessionModel.deleteOne({ _id: payload.sessionId, userId: payload.userId });
+    await issueSession(res, result.user.id, result.authVersion);
+    res.json(result.user);
   };
-
-  getMe = async (
-    req: AuthRequest,
-    res: Response,
-    next: NextFunction
-  ) => {
-    try {
-      if(!req.user) {
-        return res.status(401).json({
-          message: "Unauthorized"
-        });
-      }
-
-      const user = await this.userService.getMe(req.user.userId);
-
-      return res.status(200).json(user);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  getById = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { id } = req.params;
-
-      if (!id || Array.isArray(id)) {
-        return res.status(400).json({
-          message: "Invalid user id",
-        });
-      }
-
-      const user = await this.userService.getById(id);
-
-      return res.status(200).json(user);
-    } catch (error) {
-      next(error);
-    }
+  logout = async (req: Request, res: Response) => {
+    const token = cookieToken(req);
+    const payload = token ? verifyToken(token) : null;
+    if (payload) await SessionModel.deleteOne({ _id: payload.sessionId, userId: payload.userId });
+    clearSessionCookie(res);
+    res.status(204).end();
   };
-
-  create = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const data = createUserDto.parse(req.body);
-
-      const user = await this.userService.create(data);
-
-      return res.status(201).json(user);
-    } catch (error) {
-      next(error);
-    }
+  updateProfile = async (req: AuthRequest, res: Response) => {
+    res.json(await this.service.updateProfile(req.user!.id, profileDto.parse(req.body)));
   };
-
-  delete = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { id } = req.params;
-
-      if (!id || Array.isArray(id)) {
-        return res.status(400).json({
-          message: "Invalid user id",
-        });
-      }
-
-      await this.userService.delete(id);
-
-      return res.status(204).send();
-    } catch (error) {
-      next(error);
-    }
+  changePassword = async (req: AuthRequest, res: Response) => {
+    const data = changePasswordDto.parse(req.body);
+    await this.service.changePassword(req.user!.id, req.authVersion!, data.currentPassword, data.password);
+    clearSessionCookie(res);
+    res.status(204).end();
   };
-
-  login = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const data = loginUserDto.parse(req.body);
-
-        const result = await this.userService.login(data);
-
-        return res.status(200).json(result);
-    } catch (error) {
-        next(error);
-    }
-  }
+  delete = async (req: AuthRequest, res: Response) => {
+    await this.service.delete(idParam(req), req.user!.id);
+    res.status(204).end();
+  };
 }
