@@ -8,5 +8,5 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
   const { next } = await searchParams;
   const nextPath = safeLoginNext(typeof next === "string" ? next : undefined);
   if (await currentUser()) redirect(nextPath);
-  return <AuthShell title="เริ่มต้นกับ Zonify" subtitle="สร้างบัญชีลูกค้าเพื่อเตรียมพื้นที่ขายของคุณ"><AuthForm mode="register" nextPath={nextPath}/></AuthShell>;
+  return <AuthShell auth title="เริ่มต้นกับ Zonify" subtitle="สร้างบัญชีลูกค้าเพื่อเตรียมพื้นที่ขายของคุณ"><AuthForm mode="register" nextPath={nextPath}/></AuthShell>;
 }

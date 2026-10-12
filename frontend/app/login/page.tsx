@@ -13,5 +13,5 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const { notice, next } = await searchParams;
   const nextPath = safeLoginNext(typeof next === "string" ? next : undefined);
   if (await currentUser()) redirect(nextPath);
-  return <AuthShell title="ยินดีต้อนรับกลับ" subtitle="เข้าสู่ระบบเพื่อดูแลบัญชีของคุณ"><AuthForm mode="login" notice={notices[notice ?? ""] ?? ""} nextPath={nextPath}/></AuthShell>;
+  return <AuthShell auth title="ยินดีต้อนรับกลับ" subtitle="เข้าสู่ระบบเพื่อดูแลบัญชีของคุณ"><AuthForm mode="login" notice={notices[notice ?? ""] ?? ""} nextPath={nextPath}/></AuthShell>;
 }

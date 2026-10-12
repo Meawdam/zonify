@@ -1,0 +1,136 @@
+/* Every rule is scoped to secondary pages; the public homepage keeps its design. */
+.zonify-secondary {
+  --cream: #fff;
+  --green: #112820;
+  --sage: #f0f3ed;
+  --muted: #626b63;
+  --line: #d8dfd4;
+  --lime: #d4f57b;
+  --orange: #416747;
+  min-height: 100dvh;
+  padding-bottom: 1px;
+  background: var(--sage);
+  color: var(--green);
+}
+.zonify-secondary .container { width: min(1280px, calc(100% - 112px)); max-width: 1280px; }
+.zonify-secondary h1, .zonify-secondary h2, .zonify-secondary h3 { letter-spacing: -.025em; }
+.zonify-secondary .site-header { height: auto; min-height: 88px; background: var(--green); color: #f7faf4; border-color: #ffffff12; }
+.zonify-secondary .header-inner { min-height: 88px; gap: 32px; padding-block: 16px; }
+.zonify-secondary .header-inner > nav { min-width: 0; }
+.zonify-secondary .brand { flex-shrink: 0; gap: 11px; }
+.zonify-secondary .brand span { font-family: var(--font-thai), Tahoma, sans-serif; font-size: 34px; letter-spacing: -1.5px; font-weight: 800; }
+.zonify-secondary .brand > .icon { width: 36px; height: 36px; color: var(--lime); stroke-width: 1.7; }
+.zonify-secondary .account-menu { justify-content: flex-end; gap: 12px 24px; font-size: 14px; }
+.zonify-secondary .account-menu > a, .zonify-secondary .account-menu > button { min-height: 44px; display: inline-flex; align-items: center; }
+.zonify-secondary .account-menu > a:last-of-type { border: 1px solid #98aa9d; border-radius: 6px; padding: 8px 18px; }
+.zonify-secondary .account-menu a:hover, .zonify-secondary .nav-link:hover { color: var(--lime); }
+.zonify-secondary .account-menu .field-error { color: #ffcdc1; }
+.zonify-secondary .account-page { width: min(960px, calc(100% - 112px)); margin: 44px auto 72px; }
+.zonify-secondary .admin-page { width: min(1280px, calc(100% - 112px)); margin: 44px auto 72px; }
+.zonify-secondary .account-heading { margin-bottom: 32px; }
+.zonify-secondary .account-heading h1 { font-size: clamp(32px, 4vw, 46px); font-weight: 800; line-height: 1.3; margin: 24px 0 12px; overflow-wrap: anywhere; }
+.zonify-secondary .account-heading > p { max-width: 680px; line-height: 1.8; }
+.zonify-secondary .secondary-back .icon { transform: rotate(180deg); }
+.zonify-secondary .secondary-content { min-width: 0; }
+.zonify-secondary .secondary-auth { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: start; margin-top: 72px; }
+.zonify-secondary .secondary-auth .account-heading { padding-top: 24px; }
+.zonify-secondary .secondary-auth h1 { font-size: clamp(36px, 4vw, 52px); margin-top: 40px; }
+.zonify-secondary :is(.account-card, .booking-card, .shop-detail, .admin-editor, .admin-floor-selection, .report-cards > div, .report-trend, .catalog-state, .admin-table-scroll) { border-color: var(--line); background: white; border-radius: 8px; box-shadow: none; }
+.zonify-secondary .account-card { max-width: none; padding: 32px; }
+.zonify-secondary .button { border-radius: 6px; min-height: 52px; white-space: normal; }
+.zonify-secondary :is(.button-green, .button-orange) { background: var(--lime); color: var(--green); }
+.zonify-secondary :is(.button-green, .button-orange):hover:not(:disabled) { background: #e0fc9c; }
+.zonify-secondary .button-white { background: white; color: var(--green); border: 1px solid #b3c2b0; }
+.zonify-secondary .button-white:hover:not(:disabled) { background: var(--sage); }
+.zonify-secondary .button:disabled { background: #e4e9e0; color: #65705f; }
+.zonify-secondary .text-link:hover { color: #416747; }
+.zonify-secondary :is(button, a, input, select, textarea, summary, [tabindex]):focus-visible { outline: 3px solid #416747; outline-offset: 4px; }
+.zonify-secondary .site-header :is(button, a):focus-visible { outline-color: var(--lime); }
+.zonify-secondary :is(input:not([type="checkbox"]), select, textarea) { border-color: #a9b8a4; border-radius: 6px; color: var(--green); accent-color: var(--green); }
+.zonify-secondary .form-field input[readonly] { background: var(--sage); color: #52614e; }
+.zonify-secondary .form-field input[aria-invalid="true"] { border-color: #a23223; }
+.zonify-secondary .form-field label { font-size: 14px; }
+.zonify-secondary .form-field input { min-height: 52px; }
+.zonify-secondary .form-notice { background: #eaf3df; color: #214b35; }
+.zonify-secondary .form-alert { background: #fff0eb; color: #822719; }
+.zonify-secondary .profile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.zonify-secondary .admin-workspace { min-width: 0; }
+.zonify-secondary .admin-tabs { gap: 8px; margin: 0; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.zonify-secondary .admin-tabs:first-child { padding-top: 0; }
+.zonify-secondary .admin-tabs button { min-height: 44px; padding: 10px 18px; background: white; border-color: var(--line); border-radius: 6px; font-size: 14px; }
+.zonify-secondary .admin-tabs button[aria-current="page"] { background: var(--green); color: #f7faf4; border-color: var(--green); }
+.zonify-secondary .admin-tabs button:hover:not([aria-current="page"]) { background: #e6ecdf; }
+.zonify-secondary .admin-workspace > section { background: white; border: 1px solid var(--line); border-radius: 8px; padding: 28px; margin-top: 28px; min-width: 0; }
+.zonify-secondary .admin-workspace > .form-notice { margin-top: 20px; }
+.zonify-secondary .admin-workspace > .catalog-state { margin-top: 28px; }
+.zonify-secondary .admin-section-heading h2 { font-size: 30px; }
+.zonify-secondary :is(.admin-filters, .booking-filters) { background: var(--sage); border: 1px solid var(--line); border-radius: 6px; padding: 20px; }
+.zonify-secondary :is(.admin-filters, .booking-filters) label { min-width: 150px; }
+.zonify-secondary .admin-table-scroll { max-width: 100%; overscroll-behavior-x: contain; }
+.zonify-secondary .admin-table th { background: var(--sage); padding: 16px 20px; color: #41563f; }
+.zonify-secondary .admin-table tbody tr:hover { background: #f8faf5; }
+.zonify-secondary .admin-editor { background: var(--sage); }
+.zonify-secondary .admin-floor-layout { min-width: 0; }
+.zonify-secondary .admin-floor-layout > * { min-width: 0; }
+.zonify-secondary .live-map { background: white; border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
+.zonify-secondary .live-map .legend { background: white; }
+.zonify-secondary .live-map .slot.available.selected { background: #416747; }
+.zonify-secondary .booking-card { padding: 28px; }
+.zonify-secondary .booking-card-heading h2, .zonify-secondary .booking-card-heading h3 { font-size: 24px; }
+.zonify-secondary .booking-status { font-size: 12px; }
+.zonify-secondary .booking-expiry { background: #f3f6e8; border-color: #d4debb; border-radius: 6px; grid-template-columns: minmax(0, 1fr) auto; }
+.zonify-secondary .booking-expiry strong { font-size: 23px; }
+.zonify-secondary .booking-cancel-form { background: var(--sage); border-radius: 6px; }
+.zonify-secondary .booking-facts dd, .zonify-secondary .shop-detail dd { overflow-wrap: anywhere; }
+.zonify-secondary .payment-form fieldset { border-color: var(--line); border-radius: 6px; background: var(--sage); }
+.zonify-secondary .payment-qr { border-color: var(--line); border-radius: 8px; }
+.zonify-secondary .payment-refund { background: #fff1e7; border-radius: 6px; }
+.zonify-secondary .shop-detail { padding: 36px; }
+.zonify-secondary .shop-category { padding: 8px 12px; background: var(--sage); border-radius: 6px; color: #41563f; }
+.zonify-secondary .shop-description { line-height: 1.8; overflow-wrap: anywhere; }
+.zonify-secondary .report-cards { gap: 16px; }
+.zonify-secondary .report-cards > div { background: var(--sage); padding: 20px; }
+.zonify-secondary .report-cards dd { font-variant-numeric: tabular-nums; }
+.zonify-secondary .report-type button[aria-pressed="true"] { background: var(--green); color: white; border-color: var(--green); }
+.zonify-secondary .report-track { background: #e4eade; }
+.zonify-secondary .report-trend ul { padding: 0; list-style: none; }
+.zonify-secondary .report-trend strong { overflow-wrap: anywhere; }
+.zonify-secondary .secondary-state-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 24px; }
+.zonify-secondary .secondary-skip { position: absolute; top: 8px; left: 16px; z-index: 50; padding: 10px 16px; background: var(--lime); color: var(--green); border-radius: 6px; transform: translateY(-160%); }
+.zonify-secondary .secondary-skip:focus { transform: translateY(0); }
+@media (max-width: 1000px) {
+  .zonify-secondary :is(.container, .account-page, .admin-page) { width: calc(100% - 64px); }
+  .zonify-secondary .account-menu { gap: 8px 16px; }
+  .zonify-secondary .secondary-auth { gap: 32px; }
+  .zonify-secondary .booking-card-heading { flex-wrap: wrap; }
+}
+@media (max-width: 760px) {
+  .zonify-secondary :is(.container, .account-page, .admin-page) { width: calc(100% - 36px); }
+  .zonify-secondary .header-inner { flex-wrap: wrap; gap: 8px 20px; padding-block: 18px; }
+  .zonify-secondary .header-inner > nav { flex: 1 1 100%; }
+  .zonify-secondary .account-menu { justify-content: flex-start; gap: 4px 16px; font-size: 13px; }
+  .zonify-secondary .account-name { max-width: 180px; }
+  .zonify-secondary .account-menu > a:last-of-type { padding-inline: 12px; }
+  .zonify-secondary .brand span { font-size: 29px; }
+  .zonify-secondary .brand > .icon { width: 30px; height: 30px; }
+  .zonify-secondary :is(.account-page, .admin-page) { margin-top: 28px; margin-bottom: 48px; }
+  .zonify-secondary .account-heading { margin-bottom: 24px; }
+  .zonify-secondary .account-heading h1 { margin-top: 20px; font-size: 32px; }
+  .zonify-secondary .secondary-auth { display: block; }
+  .zonify-secondary .secondary-auth .account-heading { padding-top: 0; }
+  .zonify-secondary .secondary-auth h1 { font-size: 36px; }
+  .zonify-secondary :is(.account-card, .booking-card, .shop-detail) { padding: 24px; }
+  .zonify-secondary .profile-grid { grid-template-columns: 1fr; }
+  .zonify-secondary .admin-tabs button { padding-inline: 12px; font-size: 13px; }
+  .zonify-secondary .admin-workspace > section { padding: 20px 16px; margin-top: 24px; }
+  .zonify-secondary :is(.admin-filters, .booking-filters) { padding: 16px; gap: 16px; }
+  .zonify-secondary :is(.admin-filters, .booking-filters) label { min-width: 100%; }
+  .zonify-secondary .admin-section-heading h2 { font-size: 27px; }
+  .zonify-secondary .report-cards > div { padding: 14px; }
+  .zonify-secondary .report-cards dd { font-size: 22px; }
+  .zonify-secondary .report-trend { padding: 16px 12px; }
+  .zonify-secondary .report-trend li { grid-template-columns: 76px minmax(0, 1fr) 78px; gap: 8px; font-size: 11px; }
+  .zonify-secondary .booking-expiry { grid-template-columns: 1fr; }
+  .zonify-secondary .booking-expiry small { grid-column: auto; }
+  .zonify-secondary .pagination { gap: 12px; flex-wrap: wrap; }
+}
