@@ -4,6 +4,12 @@
 
 งานพัฒนาทั้ง 6 Phase เสร็จสำหรับรันในเครื่อง คู่มือส่งมอบ: [ติดตั้ง/Docker/HTTPS/backup](docs/OPERATIONS.md), [ลูกค้า](docs/USER-GUIDE.md), [ผู้จัดการ/เจ้าของ](docs/ADMIN-GUIDE.md), [ผลตรวจจริง](docs/TESTING.md), [แบบทดสอบและรับงานโดยผู้ใช้](docs/UAT.md) การตรวจบัญชีรับเงินจริงและการลงนาม UAT ยังเป็นขั้นตอนของผู้ดูแล/ผู้ใช้
 
+## ภาพรวมระบบ
+
+[แผนภาพ Zonify แบบโต้ตอบ](.archify/architecture-zonify-20261012-110745/zonify-overview.html) แสดง Next.js → Express API → MongoDB พร้อมบทบาทลูกค้า/ผู้จัดการ งานหมดอายุการจอง และขั้นตอนธนาคารที่ผู้ใช้งานทำเอง ดาวน์โหลดไฟล์ HTML แล้วเปิดในเบราว์เซอร์เพื่อสำรวจและดูหลักฐานโค้ด มี [ต้นฉบับ JSON](.archify/architecture-zonify-20261012-110745/candidate.json) สำหรับแก้ไขแผนภาพ
+
+หน้าแรกใช้ดีไซน์เขียวเข้ม–มะนาวที่เลือกไว้ รองรับ desktop/mobile และเชื่อมข้อมูลตลาด ผังล็อก และร้านค้าจาก API เดิม
+
 ## เริ่มใช้งานในเครื่อง
 
 ใช้ Node.js 22 ขึ้นไป, pnpm ตาม package.json และ MongoDB 8 (ติดตั้งเองหรือใช้ Docker Desktop) เปิด Docker Desktop ก่อนใช้คำสั่ง Docker ด้านล่าง

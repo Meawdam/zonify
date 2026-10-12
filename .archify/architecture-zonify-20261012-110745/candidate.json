@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Zonify · ภาพรวมระบบ",
+    "output": ".archify/architecture-zonify-20261012-110745/zonify-overview.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/Meawdam/zonify.git",
+      "revision": "5a0bd33a7a7a27fe2caeb6976e0da695e19450af",
+      "provider": "github",
+      "link_mode": "local-only"
+    }
+  },
+  "components": [
+    {
+      "id": "customer", "type": "external", "icon": "person",
+      "label": "ลูกค้า / ผู้เข้าชม", "sublabel": "สำรวจตลาด · จองล็อก", "pos": [40, 90], "size": [190, 90],
+      "sources": [
+        { "path": "frontend/app/components/market-explorer.tsx", "line": 7, "end_line": 36, "label": "สำรวจตลาดและร้านค้า" },
+        { "path": "frontend/app/components/booking-action.tsx", "line": 13, "end_line": 27, "label": "เข้าสู่ระบบก่อนพักล็อก" },
+        { "path": "frontend/app/components/payment-panel.tsx", "line": 49, "end_line": 60, "label": "ชำระและส่งสลิป" }
+      ]
+    },
+    {
+      "id": "web", "type": "frontend", "label": "หน้าเว็บ Next.js", "sublabel": "React · หน้าเว็บ + /api proxy", "pos": [400, 90], "size": [240, 90],
+      "sources": [
+        { "path": "frontend/app/page.tsx", "line": 1, "end_line": 8, "label": "หน้าแรกและบัญชีปัจจุบัน" },
+        { "path": "frontend/next.config.ts", "line": 4, "end_line": 6, "label": "ส่ง /api ไป backend" },
+        { "path": "frontend/app/lib/server-auth.ts", "line": 4, "end_line": 13, "label": "Server อ่านบัญชีผ่าน API" }
+      ]
+    },
+    {
+      "id": "api", "type": "backend", "label": "API Express", "sublabel": "ข้อมูลตลาด · จอง · ชำระ · รายงาน", "tag": "จอง: Session · จัดการ: Role", "pos": [840, 90], "size": [250, 90],
+      "sources": [
+        { "path": "backend/src/app.ts", "line": 19, "end_line": 49, "label": "Origin และ API routers" },
+        { "path": "backend/src/middlewares/auth.middleware.ts", "line": 12, "end_line": 31, "label": "ตรวจ session และ role" },
+        { "path": "backend/src/middlewares/request-security.ts", "line": 5, "end_line": 13, "label": "Origin และจำกัดคำขอ" }
+      ]
+    },
+    {
+      "id": "mongo", "type": "database", "label": "MongoDB", "sublabel": "บัญชี · ตลาด · การจอง · ภาพสลิป", "pos": [1260, 90], "size": [250, 90],
+      "sources": [
+        { "path": "backend/src/config/database.ts", "line": 1, "end_line": 22, "label": "Mongoose และ collections" },
+        { "path": "backend/src/modules/bookings/booking.schema.ts", "line": 31, "end_line": 43, "label": "Unique index ล็อกต่อวัน" },
+        { "path": "backend/src/modules/payments/payment.service.ts", "line": 58, "end_line": 99, "label": "เก็บสลิปและสถานะรับชำระ" }
+      ]
+    },
+    {
+      "id": "bank", "type": "external", "label": "แอปธนาคาร", "sublabel": "PromptPay · โอนเงินจริง", "tag": "ผู้ใช้งานทำเอง", "pos": [40, 365], "size": [190, 90],
+      "sources": [
+        { "path": "frontend/app/components/payment-panel.tsx", "line": 49, "end_line": 60, "label": "ลูกค้าโอนผ่านแอปธนาคาร" },
+        { "path": "frontend/app/components/payment-panel.tsx", "line": 74, "end_line": 94, "label": "ตรวจยอดและโอนคืนเอง" }
+      ]
+    },
+    {
+      "id": "manager", "type": "external", "icon": "person", "label": "ผู้จัดการ / เจ้าของ", "sublabel": "จัดการตลาด · ตรวจสลิป · รายงาน", "tag": "manager / owner", "pos": [400, 365], "size": [240, 90],
+      "sources": [
+        { "path": "frontend/app/admin/page.tsx", "line": 7, "end_line": 14, "label": "หน้าจัดการตามบทบาท" },
+        { "path": "backend/src/modules/payments/payment.route.ts", "line": 34, "end_line": 42, "label": "สิทธิ์ตรวจสลิปและคืนเงิน" },
+        { "path": "backend/src/modules/reports/report.route.ts", "line": 4, "end_line": 22, "label": "รายงานตามสิทธิ์" }
+      ]
+    },
+    {
+      "id": "expiry", "type": "backend", "icon": "clock", "label": "งานหมดอายุการจอง", "sublabel": "ทุก 15 วินาที · ใน process API", "pos": [1260, 365], "size": [250, 90],
+      "sources": [
+        { "path": "backend/src/server.ts", "line": 6, "end_line": 16, "label": "เริ่มงานพร้อม API" },
+        { "path": "backend/src/modules/bookings/booking.worker.ts", "line": 1, "end_line": 14, "label": "setInterval ทุก 15 วินาที" },
+        { "path": "backend/src/modules/bookings/booking.service.ts", "line": 8, "end_line": 11, "label": "อัปเดตรายการหมดเวลา" }
+      ]
+    }
+  ],
+  "connections": [
+    { "id": "customer-web", "from": "customer", "to": "web", "label": "ใช้หน้าเว็บ", "variant": "emphasis" },
+    { "id": "web-api", "from": "web", "to": "api", "label": "HTTP /api/*", "variant": "emphasis" },
+    { "id": "api-db", "from": "api", "to": "mongo", "label": "Mongoose", "variant": "emphasis" },
+    { "id": "manager-web", "from": "manager", "to": "web", "label": "/admin · ตาม role", "fromSide": "top", "toSide": "bottom", "variant": "security" },
+    { "id": "customer-bank", "from": "customer", "to": "bank", "label": "โอนด้วย QR เอง", "fromSide": "bottom", "toSide": "top", "variant": "dashed" },
+    { "id": "manager-bank", "from": "manager", "to": "bank", "label": "ตรวจยอด / คืนเงินเอง", "variant": "dashed" },
+    { "id": "api-expiry", "from": "api", "to": "expiry", "label": "เริ่ม timer", "fromSide": "bottom", "toSide": "left", "variant": "dashed" },
+    { "id": "expiry-db", "from": "expiry", "to": "mongo", "label": "expireBookings", "fromSide": "top", "toSide": "bottom" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan", "title": "หน้าเว็บและ API",
+      "items": [
+        "ผู้เข้าชมดูตลาด ผังล็อก ร้านค้า และข่าวได้; การพักล็อกต้องเข้าสู่ระบบ",
+        "คำขอ /api ผ่าน Next.js proxy; หน้า server อ่านบัญชีจาก backend ด้วย cookie",
+        "Express รวมโมดูลบัญชี ตลาด จอง ชำระ ข่าวประชาสัมพันธ์ และรายงาน"
+      ]
+    },
+    {
+      "dot": "emerald", "title": "การจองและข้อมูล",
+      "items": [
+        "พักล็อก 10 นาที; ยืนยันแล้วรอชำระอีก 30 นาที",
+        "Unique index ให้หนึ่งรายการที่ยังใช้งานอยู่ต่อล็อกต่อวัน",
+        "งาน timer เปลี่ยน held / pending_payment ที่หมดเวลาเป็น expired",
+        "MongoDB เก็บภาพสลิปส่วนตัวและประวัติการตรวจ; รายการจองไม่ถูกลบเมื่อหมดอายุ"
+      ]
+    },
+    {
+      "dot": "rose", "title": "สิทธิ์และการชำระเงิน",
+      "items": [
+        "API ตรวจ Origin สำหรับคำขอเปลี่ยนข้อมูล; เส้นทางจองตรวจ session และเจ้าของรายการ",
+        "ผู้จัดการและเจ้าของตรวจสลิปได้; รายงานรายรับจำกัด owner",
+        "PromptPay QR สร้างเมื่อกำหนดบัญชีรับเงินจริงแล้ว; ลูกค้าโอนผ่านแอปธนาคาร",
+        "ผู้จัดการตรวจเงินเข้าเองก่อนอนุมัติ; การบันทึกคืนเงินไม่ได้โอนเงินให้"
+      ]
+    }
+  ]
+}

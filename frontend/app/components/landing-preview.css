@@ -1,0 +1,155 @@
+/* Public landing design; scoped so account and manager screens retain their styles. */
+.zonify-preview {
+  --cream: #ffffff;
+  --green: #112820;
+  --sage: #f0f3ed;
+  --muted: #626b63;
+  --line: #d8dfd4;
+  --lime: #d4f57b;
+  color: var(--green);
+  background: white;
+}
+.zonify-preview .container { width: min(1280px, calc(100% - 112px)); max-width: 1280px; }
+.zonify-preview h1, .zonify-preview h2, .zonify-preview h3 { letter-spacing: -.025em; }
+.zonify-preview .button { border-radius: 6px; gap: 18px; min-height: 52px; }
+.zonify-preview .site-header { min-height: 88px; height: auto; background: var(--green); color: #f7faf4; border-color: #ffffff12; }
+.zonify-preview .header-inner { min-height: 88px; gap: 36px; padding-block: 16px; }
+.zonify-preview .brand { gap: 11px; flex-shrink: 0; }
+.zonify-preview .brand span { font-family: var(--font-thai), Tahoma, sans-serif; font-size: 34px; letter-spacing: -1.5px; font-weight: 800; }
+.zonify-preview .brand > .icon { width: 36px; height: 36px; stroke-width: 1.7; color: var(--lime); }
+.zonify-preview .nav { gap: 32px; flex-wrap: wrap; justify-content: flex-end; font-size: 15px; }
+.zonify-preview .account-menu { gap: 16px; }
+.zonify-preview .account-menu > a:last-of-type { border: 1px solid #98aa9d; border-radius: 6px; padding: 10px 24px; }
+.zonify-preview .nav a:hover, .zonify-preview .nav-link:hover { color: var(--lime); }
+.zonify-preview .hero { background: var(--green); color: #f7faf4; }
+.zonify-preview .hero-grid { grid-template-columns: .95fr 1.15fr; gap: 64px; padding-block: 48px 42px; }
+.zonify-preview .hero-copy { padding-top: 0; }
+.zonify-preview .hero-copy h1 { font-size: clamp(46px, 5.85vw, 84px); line-height: 1.2; font-weight: 800; letter-spacing: -.04em; }
+.zonify-preview .hero-copy h1 span { color: var(--lime); }
+.zonify-preview .hero-copy > p { color: #c4d0c7; font-size: 20px; line-height: 1.8; margin-top: 24px; max-width: 500px; }
+.zonify-preview .hero-actions { margin-top: 34px; gap: 28px; }
+.zonify-preview .hero-actions .button { background: var(--lime); color: var(--green); padding-inline: 28px; min-height: 60px; font-size: 18px; }
+.zonify-preview .hero-actions .button:hover { background: #e0fc9c; }
+.zonify-preview .hero-actions .text-link { color: #f7faf4; border: 0; font-size: 16px; }
+.zonify-preview .hero-actions .text-link:hover { color: var(--lime); }
+.zonify-preview .hero-media { margin: 0; min-width: 0; border-radius: 8px; overflow: hidden; background: #20392f; }
+.zonify-preview .hero-visual { height: 350px; margin-top: 0; }
+.zonify-preview .hero-visual > img { border-radius: 0; object-position: center; }
+.zonify-preview .hero-media figcaption { display: flex; justify-content: space-between; align-items: center; gap: 18px; padding: 14px 20px; font-size: 14px; color: #dce5db; }
+.zonify-preview .hero-media figcaption a { display: inline-flex; align-items: center; gap: 12px; }
+.zonify-preview .hero-media figcaption a:hover { color: var(--lime); }
+.zonify-preview .hero-media figcaption .icon { width: 16px; height: 16px; }
+.zonify-preview .steps { padding-block: 10px 46px; gap: 0; }
+.zonify-preview .step { text-align: left; padding: 0 40px; }
+.zonify-preview .step:first-child { padding-left: 0; }
+.zonify-preview .step:last-child { padding-right: 0; }
+.zonify-preview .step + .step { border-left: 1px solid #ffffff25; }
+.zonify-preview .step::after { display: none; }
+.zonify-preview .step-number { display: block; width: auto; height: auto; border: 0; border-radius: 0; background: none; color: var(--lime); font-family: ui-monospace, monospace; font-size: 32px; font-weight: 700; line-height: 1.3; }
+.zonify-preview .step h2 { margin-top: 10px; font-size: 26px; }
+.zonify-preview .step p { margin-top: 8px; font-size: 16px; color: #becac1; }
+.zonify-preview .markets-section, .zonify-preview .directory-section { padding-block: 56px; background: white; }
+.zonify-preview .section-top h2, .zonify-preview .section-heading h2 { font-size: clamp(28px, 3vw, 38px); }
+.zonify-preview .section-top { margin-bottom: 28px; gap: 24px; }
+.zonify-preview .market-gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
+.zonify-preview .market-card { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; padding-bottom: 16px; }
+.zonify-preview .market-image { border-radius: 0; height: 210px; }
+.zonify-preview .market-caption, .zonify-preview .market-meta { padding-inline: 16px; }
+.zonify-preview .market-caption { margin-top: 16px; flex-wrap: wrap; }
+.zonify-preview .market-caption h3 { font-size: 22px; }
+.zonify-preview .market-caption > span { font-size: 11px; color: var(--muted); }
+.zonify-preview .market-meta { margin-top: 10px; align-items: flex-start; flex-wrap: wrap; }
+.zonify-preview .plan-section { background: var(--sage); padding-block: 48px; }
+.zonify-preview .availability-summary { background: white; border: 1px solid var(--line); border-radius: 6px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; padding: 16px 0; }
+.zonify-preview .availability-summary > span { padding: 0 22px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+.zonify-preview .availability-summary > span + span { border-left: 1px solid var(--line); }
+.zonify-preview .availability-summary strong { font-family: ui-monospace, monospace; }
+.zonify-preview .select-control, .zonify-preview .date-control { background: white; border-color: var(--line); min-height: 50px; }
+.zonify-preview .plan-layout { grid-template-columns: minmax(0, 2.4fr) minmax(280px, 1fr); gap: 20px; }
+.zonify-preview .live-map { padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: white; }
+.zonify-preview .live-map .map-controls { margin-bottom: 14px; gap: 14px; }
+.zonify-preview .zoom-control, .zonify-preview .legend { background: white; }
+.zonify-preview .selection-panel { padding: 26px; border: 1px solid var(--line); border-radius: 8px; background: white; min-height: 100%; }
+.zonify-preview .selection-panel h3 { font-size: 26px; }
+.zonify-preview .selection-panel .detail-row:first-of-type { background: var(--sage); border-radius: 6px; padding: 14px; gap: 12px; }
+.zonify-preview .selection-panel .detail-row:first-of-type strong { font-size: 15px; }
+.zonify-preview .catalog-state { background: white; border-color: var(--line); }
+.zonify-preview .shop-card { background: white; border-radius: 8px; padding: 24px; }
+.zonify-preview .shop-card h3 { font-size: 23px; }
+.zonify-preview .shop-category { color: #51654d; }
+.zonify-preview .directory-filters input, .zonify-preview .directory-filters select { border-color: var(--line); border-radius: 6px; }
+.zonify-preview .advertisement-section { margin-block: 0 56px; }
+.zonify-preview .advertisement-card { border-radius: 8px; background: white; }
+.zonify-preview .section-heading > p { margin-top: 12px; color: var(--muted); }
+.zonify-preview .cta-inner { display: flex; justify-content: space-between; align-items: center; gap: 32px; text-align: left; padding-block: 56px; }
+.zonify-preview .cta-inner h2 { font-size: clamp(28px, 3vw, 38px); }
+.zonify-preview .cta-inner .button { margin: 0; flex-shrink: 0; background: var(--lime); }
+.zonify-preview footer { padding-block: 28px; }
+.zonify-preview footer .brand .icon { color: var(--green); }
+.zonify-preview footer .brand span { font-size: 26px; }
+.zonify-preview footer p { font-size: 12px; }
+@media (max-width: 1100px) {
+  .zonify-preview .container { width: calc(100% - 64px); }
+  .zonify-preview .hero-grid { gap: 32px; }
+  .zonify-preview .hero-copy h1 { font-size: 54px; }
+  .zonify-preview .hero-visual { height: 320px; }
+  .zonify-preview .nav { gap: 20px; font-size: 13px; }
+  .zonify-preview .market-caption h3 { font-size: 20px; }
+  .zonify-preview .step { padding-inline: 28px; }
+  .zonify-preview .plan-heading { align-items: flex-start; }
+}
+@media (max-width: 800px) {
+  .zonify-preview .container { width: calc(100% - 40px); }
+  .zonify-preview .hero-grid { gap: 24px; }
+  .zonify-preview .hero-copy h1 { font-size: 44px; }
+  .zonify-preview .hero-copy > p { font-size: 15px; }
+  .zonify-preview .hero-actions { gap: 16px; flex-wrap: wrap; }
+  .zonify-preview .hero-visual { height: 300px; }
+  .zonify-preview .step { padding-inline: 20px; }
+  .zonify-preview .step h2 { font-size: 19px; }
+  .zonify-preview .plan-layout { grid-template-columns: 1fr; }
+  .zonify-preview .selection-panel { min-height: 0; }
+  .zonify-preview .market-image { height: 170px; }
+}
+@media (max-width: 680px) {
+  .zonify-preview .container { width: calc(100% - 36px); }
+  .zonify-preview .site-header, .zonify-preview .header-inner { min-height: 72px; }
+  .zonify-preview .header-inner { padding-block: 12px; gap: 16px; }
+  .zonify-preview .brand span { font-size: 28px; }
+  .zonify-preview .brand > .icon { width: 30px; height: 30px; }
+  .zonify-preview .mobile-menu { border-color: #668574; color: #f7faf4; }
+  .zonify-preview .nav { top: 72px; background: var(--green); border-color: #668574; }
+  .zonify-preview .nav.open { font-size: 15px; align-items: flex-start; }
+  .zonify-preview .hero-grid { grid-template-columns: 1fr; padding-block: 32px; gap: 28px; }
+  .zonify-preview .hero-copy h1 { font-size: clamp(40px, 11.5vw, 60px); }
+  .zonify-preview .hero-copy > p { margin-top: 18px; }
+  .zonify-preview .hero-actions { margin-top: 24px; gap: 24px; }
+  .zonify-preview .hero-actions .button { min-height: 52px; font-size: 15px; padding-inline: 20px; }
+  .zonify-preview .hero-actions .text-link { font-size: 14px; }
+  .zonify-preview .hero-visual { height: 240px; }
+  .zonify-preview .hero-media figcaption { padding: 12px 14px; font-size: 11px; }
+  .zonify-preview .steps { grid-template-columns: 1fr; padding-block: 0 32px; gap: 20px; }
+  .zonify-preview .step { padding: 16px 0 0; display: grid; grid-template-columns: 42px 1fr; column-gap: 18px; border-top: 1px solid #ffffff25; }
+  .zonify-preview .step + .step { border-left: 0; }
+  .zonify-preview .step-number { grid-row: span 2; font-size: 23px; margin-top: 2px; }
+  .zonify-preview .step h2 { margin-top: 0; font-size: 18px; }
+  .zonify-preview .step p { margin-top: 5px; font-size: 12px; }
+  .zonify-preview .markets-section, .zonify-preview .directory-section, .zonify-preview .plan-section { padding-block: 36px; }
+  .zonify-preview .section-top { align-items: flex-start; gap: 12px; }
+  .zonify-preview .market-gallery { grid-template-columns: 1fr; gap: 20px; }
+  .zonify-preview .market-image { height: 220px; }
+  .zonify-preview .market-caption h3 { font-size: 22px; }
+  .zonify-preview .market-caption > span { font-size: 12px; }
+  .zonify-preview .availability-summary { grid-template-columns: repeat(2, 1fr); row-gap: 16px; }
+  .zonify-preview .availability-summary > span { padding-inline: 16px; }
+  .zonify-preview .availability-summary > span:nth-child(3) { border-left: 0; }
+  .zonify-preview .plan-filters { width: 100%; margin-top: 4px; }
+  .zonify-preview .live-map { padding: 10px; }
+  .zonify-preview .selection-panel { padding: 20px; }
+  .zonify-preview .selection-panel h3 { font-size: 25px; }
+  .zonify-preview .shop-grid { gap: 16px; }
+  .zonify-preview .advertisement-section { margin-bottom: 36px; }
+  .zonify-preview .cta-inner { flex-direction: column; align-items: flex-start; gap: 24px; padding-block: 36px; }
+  .zonify-preview .cta-inner p { font-size: 14px; margin-top: 12px; }
+  .zonify-preview footer p { font-size: 11px; }
+}

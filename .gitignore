@@ -3,3 +3,10 @@
 /design-backups/
 /zonify-*.png
 /.data/
+
+# Archify keeps portable diagrams; verification receipts and captures stay local.
+/.archify/**/visual-check/
+/.archify/**/*.browser-check.json
+/.archify/**/*.delivery.json
+/.archify/**/*.finalize.json
+/.archify/**/*.finalize-summary.json

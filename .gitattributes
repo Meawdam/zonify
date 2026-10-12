@@ -1,0 +1,4 @@
+# Preserve Archify artifact bytes across Windows checkouts.
+.archify/**/candidate.json text eol=lf
+# The generated viewer template contains intentional whitespace-only lines.
+.archify/**/*.html text eol=lf whitespace=-blank-at-eol
