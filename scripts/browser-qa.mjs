@@ -36,7 +36,7 @@ try {
   const context = await browser.newContext({ ignoreHTTPSErrors: tls, viewport: { width: 1440, height: 1000 } });
   const page = await context.newPage(); page.on("pageerror", error => errors.push(error.message)); page.on("console", message => { if (["error", "warning"].includes(message.type())) errors.push(message.text()); });
   async function login(p, email, pass = password) {
-    await p.goto(base + "/login"); await p.getByLabel("อีเมล", { exact: true }).fill(email); await p.getByLabel("รหัสผ่าน", { exact: true }).fill(pass); await p.getByRole("button", { name: "เข้าสู่ระบบ", exact: true }).click(); await p.waitForURL("**/profile");
+    await p.goto(base + "/login"); await p.getByLabel("อีเมล", { exact: true }).fill(email); await p.getByLabel("รหัสผ่าน", { exact: true }).fill(pass); await p.getByRole("button", { name: "เข้าสู่ระบบ", exact: true }).click(); await p.waitForURL(base + "/"); await p.goto(base + "/profile");
   }
   const email = "customer@browser.qa.test";
   await page.goto(base + "/register"); await page.getByLabel("ชื่อ", { exact: true }).fill("ลูกค้าทดสอบระบบ");

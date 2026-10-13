@@ -14,7 +14,7 @@ function formValues(form: HTMLFormElement) { return Object.fromEntries(new FormD
 function focusError(form: HTMLFormElement) {
   requestAnimationFrame(() => form.querySelector<HTMLInputElement>('[aria-invalid="true"]')?.focus());
 }
-export function AuthForm({ mode, notice = "", nextPath = "/profile" }: { mode: "login" | "register"; notice?: string; nextPath?: string }) {
+export function AuthForm({ mode, notice = "", nextPath = "/" }: { mode: "login" | "register"; notice?: string; nextPath?: string }) {
   const register = mode === "register";
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -35,7 +35,7 @@ export function AuthForm({ mode, notice = "", nextPath = "/profile" }: { mode: "
     setBusy(true);
     try {
       await api<User>(register ? "" : "/login", { method: "POST", body: register ? { name: data.name, email: data.email, password: data.password } : { email: data.email, password: data.password } });
-      router.replace(register ? "/login?notice=registered" + (nextPath !== "/profile" ? "&next=" + encodeURIComponent(nextPath) : "") : nextPath); router.refresh();
+      router.replace(register ? "/login?notice=registered" + (nextPath !== "/" ? "&next=" + encodeURIComponent(nextPath) : "") : nextPath); router.refresh();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "ทำรายการไม่สำเร็จ");
       if (error instanceof ApiError) { setErrors(error.fields); focusError(form); }
@@ -51,7 +51,7 @@ export function AuthForm({ mode, notice = "", nextPath = "/profile" }: { mode: "
       {register && <Field name="confirmPassword" label="ยืนยันรหัสผ่าน" type="password" autoComplete="new-password" required error={errors.confirmPassword}/>}
       <button className="button button-green form-submit" type="submit">{busy ? "กำลังดำเนินการ…" : register ? "สมัครสมาชิก" : "เข้าสู่ระบบ"}</button>
     </fieldset>
-    <p className="account-switch">{register ? "มีบัญชีแล้ว? " : "ยังไม่มีบัญชี? "}<Link href={(register ? "/login" : "/register") + (nextPath !== "/profile" ? "?next=" + encodeURIComponent(nextPath) : "")}>{register ? "เข้าสู่ระบบ" : "สมัครสมาชิก"}</Link></p>
+    <p className="account-switch">{register ? "มีบัญชีแล้ว? " : "ยังไม่มีบัญชี? "}<Link href={(register ? "/login" : "/register") + (nextPath !== "/" ? "?next=" + encodeURIComponent(nextPath) : "")}>{register ? "เข้าสู่ระบบ" : "สมัครสมาชิก"}</Link></p>
   </form>;
 }
 export function ProfileForms({ user }: { user: User }) {

@@ -29,10 +29,10 @@ export function floorLink(booking: Booking) {
   return "/?" + new URLSearchParams({ market: booking.stall.marketId, stall: booking.stall.id, date: booking.date }) + "#floor-plan";
 }
 export function safeLoginNext(value: string | undefined) {
-  if (!value) return "/profile";
+  if (!value) return "/";
   try {
     const url = new URL(value, "http://zonify.local");
-    if (url.origin !== "http://zonify.local" || !(url.pathname === "/" || /^\/bookings(?:\/[a-zA-Z0-9-]+)?$/.test(url.pathname))) return "/profile";
+    if (url.origin !== "http://zonify.local" || !(url.pathname === "/" || /^\/bookings(?:\/[a-zA-Z0-9-]+)?$/.test(url.pathname))) return "/";
     return url.pathname + url.search + url.hash;
-  } catch { return "/profile"; }
+  } catch { return "/"; }
 }
