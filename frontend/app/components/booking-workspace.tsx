@@ -67,7 +67,7 @@ export function BookingDetail({ id }: { id: string }) {
   if (result.error) return <p className="catalog-state" role="alert">{result.error} <button className="text-link" onClick={result.retry}>ลองโหลดอีกครั้ง</button> <Link className="text-link" href="/bookings">กลับรายการของฉัน</Link></p>;
   if (!result.data) return null;
   const booking = result.data;
-  return <article className="booking-card">
+  return <article className="booking-card booking-detail">
     <div className="booking-card-heading"><h2>ล็อก {booking.stall.code}</h2><span className={"booking-status " + booking.status}>{bookingStatusLabels[booking.status]}</span></div>
     <p className="booking-reference">รหัสรายการ {booking.id}</p><BookingFacts booking={booking}/><Expiry booking={booking} now={now}/>
     {booking.cancelReason && <p className="form-description">เหตุผลที่ยกเลิก: {booking.cancelReason}</p>}

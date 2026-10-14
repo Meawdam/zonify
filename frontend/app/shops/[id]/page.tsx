@@ -18,7 +18,7 @@ export default async function ShopPage({ params }: { params: Promise<{ id: strin
   const position = new URLSearchParams({ market: shop.market.id, ...(shop.stall ? { stall: shop.stall.id } : {}) });
   return <AuthShell title={shop.name} subtitle={shop.market.name + " · " + shop.market.location} user={user}>
     <article className="shop-detail">
-      <span className="shop-category"><Icon name="store"/>{shop.category.name}</span>
+      <span className="shop-detail-mark" aria-hidden="true"><Icon name="store"/></span><span className="shop-category"><Icon name="store"/>{shop.category.name}</span>
       <p className="shop-description">{shop.description}</p>
       <dl><div><dt>ตลาด</dt><dd>{shop.market.name}</dd></div><div><dt>ตำแหน่ง</dt><dd>{shop.stall ? "ล็อก " + shop.stall.code : "ยังไม่ระบุตำแหน่งล็อก"}</dd></div><div><dt>เวลาเปิดร้าน</dt><dd>{shop.hours || "ยังไม่ระบุเวลาเปิดร้าน"}</dd></div></dl>
       <p className="catalog-note">ตำแหน่งร้านเป็นข้อมูลร้านค้า โปรดดูสถานะพื้นที่แยกตามวันที่บนผัง</p>

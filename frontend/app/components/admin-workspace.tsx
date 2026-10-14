@@ -8,16 +8,23 @@ import { baht, type FloorPlan } from "../lib/catalog";
 import { BookingList } from "./booking-workspace";
 import { Dashboard, Reports } from "./report-workspace";
 
+type WorkspaceTab = AdminKind | "floor" | "users" | "bookings" | "holds" | "payments" | "dashboard" | "reports";
 export function AdminWorkspace({ user, today }: { user: User; today: string }) {
-  const [tab, setTab] = useState<AdminKind | "floor" | "users" | "bookings" | "holds" | "payments" | "dashboard" | "reports">("markets");
+  const [tab, setTab] = useState<WorkspaceTab>("markets");
   const refs = usePublicData<AdminReferences>("/api/admin/references", 0, true);
   const [notice, setNotice] = useState("");
   function refresh() { refs.retry(); }
   return <div className="admin-workspace">
+    <div className="admin-navigation">
+    <label className="admin-section-picker">ส่วนจัดการ<select value={tab} onChange={e => { setTab(e.target.value as WorkspaceTab); setNotice(""); }}>
+      {Object.entries(adminLabels).map(([kind, label]) => <option key={kind} value={kind}>{label}</option>)}
+      <option value="floor">จัดผังล็อก</option><option value="users">ผู้ใช้</option><option value="bookings">รายการจอง</option><option value="holds">พักล็อก</option><option value="payments">ตรวจชำระเงิน</option><option value="dashboard">Dashboard</option><option value="reports">รายงาน</option>
+    </select></label>
     <nav className="admin-tabs" aria-label="เมนูจัดการ">{(Object.keys(adminLabels) as AdminKind[]).map(kind => <button key={kind} aria-current={tab === kind ? "page" : undefined} onClick={() => { setTab(kind); setNotice(""); }}>{adminLabels[kind]}</button>)}<button aria-current={tab === "floor" ? "page" : undefined} onClick={() => { setTab("floor"); setNotice(""); }}>จัดผังล็อก</button><button aria-current={tab === "users" ? "page" : undefined} onClick={() => { setTab("users"); setNotice(""); }}>ผู้ใช้</button></nav>
     <nav className="admin-tabs" aria-label="เมนูรายการจอง"><button aria-current={tab === "bookings" ? "page" : undefined} onClick={() => { setTab("bookings"); setNotice(""); }}>รายการจอง</button><button aria-current={tab === "holds" ? "page" : undefined} onClick={() => { setTab("holds"); setNotice(""); }}>พักล็อก</button><button aria-current={tab === "payments" ? "page" : undefined} onClick={() => { setTab("payments"); setNotice(""); }}>ตรวจชำระเงิน</button></nav>
-    {notice && <p className="form-notice" role="status">{notice}</p>}
     <nav className="admin-tabs" aria-label="เมนูสรุปผล"><button aria-current={tab === "dashboard" ? "page" : undefined} onClick={() => { setTab("dashboard"); setNotice(""); }}>Dashboard</button><button aria-current={tab === "reports" ? "page" : undefined} onClick={() => { setTab("reports"); setNotice(""); }}>รายงาน</button></nav>
+    </div>
+    {notice && <p className="form-notice" role="status">{notice}</p>}
     {refs.loading && !refs.data ? <p className="catalog-state" role="status">กำลังโหลดข้อมูลจัดการ…</p> : refs.error ? <p className="catalog-state" role="alert">{refs.error} <button className="text-link" onClick={refs.retry}>ลองใหม่</button></p> : refs.data && <>
       {tab === "dashboard" ? <Dashboard today={today} markets={refs.data.markets}/> : tab === "reports" ? <Reports today={today} markets={refs.data.markets} owner={user.role === "owner"}/> : tab === "bookings" || tab === "holds" || tab === "payments" ? <BookingList key={tab} manager holdsOnly={tab === "holds"} defaultStatus={tab === "payments" ? "payment_review" : ""}/> : tab === "users" ? <UserList key="users" user={user}/> : tab === "floor" ? <FloorEditor key="floor" refs={refs.data} onChange={refresh}/> : <ResourcePanel key={tab} kind={tab} refs={refs.data} onChange={refresh} onNotice={setNotice}/>}
     </>}

@@ -42,6 +42,7 @@ export function AuthForm({ mode, notice = "", nextPath = "/" }: { mode: "login" 
     } finally { setBusy(false); }
   }
   return <form className="account-card" noValidate onSubmit={submit} aria-busy={busy}>
+    <h2>{register ? "สมัครสมาชิก" : "เข้าสู่ระบบ"}</h2>
     {notice && <p className="form-notice" role="status">{notice}</p>}
     {message && <p className="form-alert" role="alert">{message}</p>}
     <fieldset disabled={busy}>

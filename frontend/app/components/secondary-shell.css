@@ -1,136 +1,239 @@
-/* Every rule is scoped to secondary pages; the public homepage keeps its design. */
-.zonify-secondary {
-  --cream: #fff;
-  --green: #112820;
-  --sage: #f0f3ed;
-  --muted: #626b63;
-  --line: #d8dfd4;
-  --lime: #d4f57b;
-  --orange: #416747;
-  min-height: 100dvh;
-  padding-bottom: 1px;
-  background: var(--sage);
-  color: var(--green);
-}
-.zonify-secondary .container { width: min(1280px, calc(100% - 112px)); max-width: 1280px; }
-.zonify-secondary h1, .zonify-secondary h2, .zonify-secondary h3 { letter-spacing: -.025em; }
-.zonify-secondary .site-header { height: auto; min-height: 88px; background: var(--green); color: #f7faf4; border-color: #ffffff12; }
-.zonify-secondary .header-inner { min-height: 88px; gap: 32px; padding-block: 16px; }
-.zonify-secondary .header-inner > nav { min-width: 0; }
-.zonify-secondary .brand { flex-shrink: 0; gap: 11px; }
-.zonify-secondary .brand span { font-family: var(--font-thai), Tahoma, sans-serif; font-size: 34px; letter-spacing: -1.5px; font-weight: 800; }
-.zonify-secondary .brand > .icon { width: 36px; height: 36px; color: var(--lime); stroke-width: 1.7; }
+/* Account, reservations, shops and manager UI share the palette in globals.css. */
+.zonify-secondary { min-height: 100dvh; display: flex; flex-direction: column; color: var(--green); background: var(--cream); }
+.zonify-secondary .container { width: min(1280px, calc(100% - 96px)); max-width: 1280px; }
+.zonify-secondary :is(h1,h2,h3) { letter-spacing: -.025em; font-weight: 650; line-height: 1.4; }
+.zonify-secondary .site-header { height: auto; min-height: 84px; background: var(--cream); color: var(--green); border-color: var(--line); }
+.zonify-secondary .header-inner { min-height: 84px; padding-block: 14px; gap: 32px; }
+.zonify-secondary .header-inner > nav { min-width: 0; display: flex; align-items: center; gap: 24px; }
+.zonify-secondary .brand { gap: 10px; flex-shrink: 0; }
+.zonify-secondary .brand span { font-family: var(--font-thai), Tahoma, sans-serif; font-size: 32px; font-weight: 750; letter-spacing: -1.3px; }
+.zonify-secondary .brand > .icon { width: 36px; height: 36px; color: var(--green); stroke-width: 1.6; }
 .zonify-secondary .account-menu { justify-content: flex-end; gap: 12px 24px; font-size: 14px; }
-.zonify-secondary .account-menu > a, .zonify-secondary .account-menu > button { min-height: 44px; display: inline-flex; align-items: center; }
-.zonify-secondary .account-menu > a:last-of-type { border: 1px solid #98aa9d; border-radius: 6px; padding: 8px 18px; }
-.zonify-secondary .account-menu a:hover, .zonify-secondary .nav-link:hover { color: var(--lime); }
-.zonify-secondary .account-menu .field-error { color: #ffcdc1; }
-.zonify-secondary .account-page { width: min(960px, calc(100% - 112px)); margin: 44px auto 72px; }
-.zonify-secondary .admin-page { width: min(1280px, calc(100% - 112px)); margin: 44px auto 72px; }
+.zonify-secondary .account-menu > a, .zonify-secondary .account-menu > button, .zonify-secondary .secondary-register-link { display: inline-flex; align-items: center; min-height: 44px; }
+.zonify-secondary .account-menu > a:last-of-type { border: 1px solid var(--line); border-radius: 8px; padding: 8px 18px; }
+.zonify-secondary .account-menu a:hover, .zonify-secondary .nav-link:hover, .zonify-secondary .secondary-register-link:hover { color: var(--orange); }
+.zonify-secondary .secondary-register-link { font-size: 14px; border-left: 1px solid var(--line); padding-left: 24px; }
+.zonify-secondary .account-page { width: min(1040px, calc(100% - 96px)); margin: 40px auto 64px; flex: 1; }
+.zonify-secondary .admin-page { width: min(1280px, calc(100% - 96px)); margin: 40px auto 64px; flex: 1; }
 .zonify-secondary .account-heading { margin-bottom: 32px; }
-.zonify-secondary .account-heading h1 { font-size: clamp(32px, 4vw, 46px); font-weight: 800; line-height: 1.3; margin: 24px 0 12px; overflow-wrap: anywhere; }
-.zonify-secondary .account-heading > p { max-width: 680px; line-height: 1.8; }
+.zonify-secondary .account-heading h1 { font-size: clamp(32px, 4vw, 44px); margin: 20px 0 10px; overflow-wrap: anywhere; }
+.zonify-secondary .account-heading p { max-width: 720px; color: var(--muted); font-size: 16px; line-height: 1.8; }
+.zonify-secondary .secondary-back { font-size: 13px; color: var(--muted); }
 .zonify-secondary .secondary-back .icon { transform: rotate(180deg); }
 .zonify-secondary .secondary-content { min-width: 0; }
-.zonify-secondary .secondary-auth { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: start; margin-top: 72px; }
-.zonify-secondary .secondary-auth .account-heading { padding-top: 24px; }
-.zonify-secondary .secondary-auth h1 { font-size: clamp(36px, 4vw, 52px); margin-top: 40px; }
-.zonify-secondary :is(.account-card, .booking-card, .shop-detail, .admin-editor, .admin-floor-selection, .report-cards > div, .report-trend, .catalog-state, .admin-table-scroll) { border-color: var(--line); background: white; border-radius: 8px; box-shadow: none; }
+.zonify-secondary .secondary-auth { width: min(1200px, calc(100% - 96px)); flex: 0 0 auto; display: grid; grid-template-columns: 1.1fr 1fr; gap: 0; align-items: stretch; margin-block: 48px 64px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.zonify-secondary .secondary-auth .account-heading { display: flex; flex-direction: column; margin: 0; background: var(--sage); }
+.zonify-secondary .secondary-auth .heading-copy { padding: 32px 40px 28px; }
+.zonify-secondary .secondary-auth h1 { font-size: clamp(32px, 3.2vw, 46px); margin-top: 28px; }
+.zonify-secondary .auth-market-photo { position: relative; min-height: 300px; flex: 1; }
+.zonify-secondary .auth-market-photo img { object-fit: cover; object-position: center; }
+.zonify-secondary .secondary-auth .secondary-content { display: flex; background: var(--surface); }
+.zonify-secondary .secondary-auth .account-card { border: 0; border-radius: 0; display: flex; flex-direction: column; justify-content: center; padding: 44px; }
+.zonify-secondary :is(.account-card,.booking-card,.shop-detail,.admin-editor,.admin-floor-selection,.report-trend,.catalog-state,.admin-table-scroll) { border: 1px solid var(--line); border-radius: 12px; box-shadow: none; background: var(--surface); }
 .zonify-secondary .account-card { max-width: none; padding: 32px; }
-.zonify-secondary .button { border-radius: 6px; min-height: 52px; white-space: normal; }
-.zonify-secondary :is(.button-green, .button-orange) { background: var(--lime); color: var(--green); }
-.zonify-secondary :is(.button-green, .button-orange):hover:not(:disabled) { background: #e0fc9c; }
-.zonify-secondary .button-white { background: white; color: var(--green); border: 1px solid #b3c2b0; }
+.zonify-secondary .account-card h2 { font-size: 26px; margin-bottom: 24px; }
+.zonify-secondary .button { border-radius: 8px; min-height: 52px; padding: 12px 24px; font-size: 15px; white-space: normal; }
+.zonify-secondary .button-green { background: var(--green); color: var(--surface); }
+.zonify-secondary .button-orange { background: var(--orange); color: var(--surface); }
+.zonify-secondary .button-green:hover:not(:disabled) { background: #285447; }
+.zonify-secondary .button-orange:hover:not(:disabled) { background: #9b3e25; }
+.zonify-secondary .button-white { background: var(--surface); color: var(--green); border: 1px solid var(--line); }
 .zonify-secondary .button-white:hover:not(:disabled) { background: var(--sage); }
-.zonify-secondary .button:disabled { background: #e4e9e0; color: #65705f; }
-.zonify-secondary .text-link:hover { color: #416747; }
-.zonify-secondary :is(button, a, input, select, textarea, summary, [tabindex]):focus-visible { outline: 3px solid #416747; outline-offset: 4px; }
-.zonify-secondary .site-header :is(button, a):focus-visible { outline-color: var(--lime); }
-.zonify-secondary :is(input:not([type="checkbox"]), select, textarea) { border-color: #a9b8a4; border-radius: 6px; color: var(--green); accent-color: var(--green); }
-.zonify-secondary .form-field input[readonly] { background: var(--sage); color: #52614e; }
+.zonify-secondary .button:disabled { background: var(--unavailable); color: var(--unavailable-ink); }
+.zonify-secondary .text-link { min-height: 44px; border: 0; text-decoration: underline; text-underline-offset: 6px; font-size: 14px; }
+.zonify-secondary .text-link:hover { color: var(--orange); }
+.zonify-secondary :is(button,a,input,select,textarea,summary,[tabindex]):focus-visible { outline: 3px solid var(--orange); outline-offset: 4px; }
+.zonify-secondary :is(input:not([type="checkbox"]), select, textarea) { border-color: var(--line); border-radius: 8px; color: var(--green); background: var(--surface); accent-color: var(--green); }
+.zonify-secondary .form-field { margin-bottom: 22px; }
+.zonify-secondary .form-field label { font-size: 14px; font-weight: 550; margin-bottom: 8px; }
+.zonify-secondary .form-field input { min-height: 52px; padding: 12px 14px; }
+.zonify-secondary .form-field input[readonly] { background: var(--sage); color: var(--muted); }
 .zonify-secondary .form-field input[aria-invalid="true"] { border-color: #a23223; }
-.zonify-secondary .form-field label { font-size: 14px; }
-.zonify-secondary .form-field input { min-height: 52px; }
-.zonify-secondary .form-notice { background: #eaf3df; color: #214b35; }
-.zonify-secondary .form-alert { background: #fff0eb; color: #822719; }
-.zonify-secondary .profile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.zonify-secondary .form-field small { font-size: 12px; line-height: 1.8; margin-top: 7px; }
+.zonify-secondary .form-submit { margin-top: 4px; }
+.zonify-secondary .account-switch { border-top: 1px solid var(--line); padding-top: 22px; margin-top: 24px; }
+.zonify-secondary .account-switch a { color: var(--orange); }
+.zonify-secondary .form-notice { background: var(--available); color: var(--available-ink); border-radius: 8px; }
+.zonify-secondary .form-alert { background: #fff0eb; color: #822719; border-radius: 8px; }
+.zonify-secondary .profile-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 28px; }
+.zonify-secondary .profile-grid .account-card { height: 100%; }
+.zonify-secondary .profile-grid .account-card:last-child .form-submit { background: var(--orange); }
 .zonify-secondary .admin-workspace { min-width: 0; }
-.zonify-secondary .admin-tabs { gap: 8px; margin: 0; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.zonify-secondary .admin-section-picker { display: none; }
+.zonify-secondary .admin-tabs { gap: 8px; margin: 0; padding: 8px 0; border-bottom: 1px solid var(--line); }
 .zonify-secondary .admin-tabs:first-child { padding-top: 0; }
-.zonify-secondary .admin-tabs button { min-height: 44px; padding: 10px 18px; background: white; border-color: var(--line); border-radius: 6px; font-size: 14px; }
-.zonify-secondary .admin-tabs button[aria-current="page"] { background: var(--green); color: #f7faf4; border-color: var(--green); }
-.zonify-secondary .admin-tabs button:hover:not([aria-current="page"]) { background: #e6ecdf; }
-.zonify-secondary .admin-workspace > section { background: white; border: 1px solid var(--line); border-radius: 8px; padding: 28px; margin-top: 28px; min-width: 0; }
+.zonify-secondary .admin-navigation { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.zonify-secondary .admin-navigation .admin-tabs { border-bottom: 0; padding: 0; gap: 2px; }
+.zonify-secondary .admin-navigation .admin-tabs + .admin-tabs { border-left: 1px solid var(--line); padding-left: 12px; }
+.zonify-secondary .admin-navigation .admin-tabs button { padding-inline: 12px; }
+
+.zonify-secondary .admin-tabs button { min-height: 44px; padding: 10px 16px; background: transparent; border: 0; border-bottom: 2px solid transparent; border-radius: 0; font-size: 14px; color: var(--muted); }
+.zonify-secondary .admin-tabs button[aria-current="page"] { color: var(--green); border-bottom-color: var(--green); font-weight: 650; background: none; }
+.zonify-secondary .admin-tabs button:hover:not([aria-current="page"]) { background: var(--sage); color: var(--green); }
+.zonify-secondary .admin-workspace > section { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 28px; margin-top: 28px; min-width: 0; }
 .zonify-secondary .admin-workspace > .form-notice { margin-top: 20px; }
 .zonify-secondary .admin-workspace > .catalog-state { margin-top: 28px; }
+.zonify-secondary .admin-section-heading { align-items: flex-start; }
 .zonify-secondary .admin-section-heading h2 { font-size: 30px; }
-.zonify-secondary :is(.admin-filters, .booking-filters) { background: var(--sage); border: 1px solid var(--line); border-radius: 6px; padding: 20px; }
-.zonify-secondary :is(.admin-filters, .booking-filters) label { min-width: 150px; }
-.zonify-secondary .admin-table-scroll { max-width: 100%; overscroll-behavior-x: contain; }
-.zonify-secondary .admin-table th { background: var(--sage); padding: 16px 20px; color: #41563f; }
-.zonify-secondary .admin-table tbody tr:hover { background: #f8faf5; }
-.zonify-secondary .admin-editor { background: var(--sage); }
-.zonify-secondary .admin-floor-layout { min-width: 0; }
+.zonify-secondary .admin-section-heading h3 { font-size: 24px; }
+.zonify-secondary :is(.admin-filters,.booking-filters) { padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; gap: 16px; }
+.zonify-secondary .admin-filters { background: var(--cream); }
+.zonify-secondary :is(.admin-filters,.booking-filters) label { min-width: 150px; font-size: 14px; }
+.zonify-secondary :is(.admin-filters,.booking-filters,.admin-market-picker) :is(input,select) { min-height: 50px; }
+.zonify-secondary .admin-table-scroll { max-width: 100%; overscroll-behavior-x: contain; border-radius: 8px; }
+.zonify-secondary .admin-table { font-size: 14px; }
+.zonify-secondary .admin-table th { background: var(--sage); padding: 16px 20px; font-weight: 600; }
+.zonify-secondary .admin-table td { padding: 20px; line-height: 1.8; }
+.zonify-secondary .admin-table tbody tr:hover { background: var(--cream); }
+.zonify-secondary .admin-row-actions { gap: 16px; }
+.zonify-secondary .admin-row-actions > button:last-child { color: var(--orange); }
+.zonify-secondary .admin-badge { border-radius: 6px; background: var(--available); color: var(--available-ink); padding: 5px 10px; }
+.zonify-secondary .admin-badge.inactive { background: var(--unavailable); color: var(--unavailable-ink); }
+.zonify-secondary .admin-editor { margin-top: 28px; padding: 28px; background: var(--cream); }
+.zonify-secondary .admin-floor-layout { min-width: 0; gap: 20px; }
 .zonify-secondary .admin-floor-layout > * { min-width: 0; }
-.zonify-secondary .live-map { background: white; border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
-.zonify-secondary .live-map .legend { background: white; }
-.zonify-secondary .live-map .slot.available.selected { background: #416747; }
+.zonify-secondary .admin-floor-selection { padding: 24px; }
+.zonify-secondary .live-map { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+.zonify-secondary .live-map .legend, .zonify-secondary .zoom-control { background: var(--surface); }
+.zonify-secondary .zoom-control { border-radius: 8px; }
+.zonify-secondary .zoom-control button { width: 44px; height: 44px; }
+.zonify-secondary .legend { font-size: 12px; padding: 0; gap: 12px; }
+.zonify-secondary .live-map .plan-canvas { background: #f3eedf url('/images/plan-landscape.svg') center / 100% 100%; min-height: 420px; }
+.zonify-secondary .live-map .map-scroll { margin: 36px 22px 22px 64px; max-height: 480px; }
+.zonify-secondary .live-map .slot { min-height: 64px; border-radius: 6px; box-shadow: none; }
+.zonify-secondary .live-map .slot small { font-size: 11px; }
+.zonify-secondary .live-map .slot.available { background: var(--available); color: var(--available-ink); border-color: #9cb78f; }
+.zonify-secondary .live-map .slot.booked { background: var(--booked); color: var(--booked-ink); border-color: #c9a991; }
+.zonify-secondary .live-map .slot.held { background: var(--held); color: var(--held-ink); border-color: #c6a252; }
+.zonify-secondary .live-map .slot.unavailable { background: var(--unavailable); color: var(--unavailable-ink); border-color: #b3bdb6; }
+.zonify-secondary .live-map .slot.selected { background: var(--green); color: var(--surface); border-color: var(--surface); box-shadow: 0 0 0 3px var(--green); }
+.zonify-secondary .live-map .slot:hover { transform: none; outline: 2px solid var(--green); outline-offset: 1px; }
+.zonify-secondary .available-dot { background: #83a574; }
+.zonify-secondary .booked-dot { background: #ba947e; }
+.zonify-secondary .held-dot { background: #d6b660; }
+.zonify-secondary .unavailable-dot { background: #a8b2ab; }
+.zonify-secondary .booking-grid { gap: 24px; }
 .zonify-secondary .booking-card { padding: 28px; }
-.zonify-secondary .booking-card-heading h2, .zonify-secondary .booking-card-heading h3 { font-size: 24px; }
-.zonify-secondary .booking-status { font-size: 12px; }
-.zonify-secondary .booking-expiry { background: #f3f6e8; border-color: #d4debb; border-radius: 6px; grid-template-columns: minmax(0, 1fr) auto; }
-.zonify-secondary .booking-expiry strong { font-size: 23px; }
-.zonify-secondary .booking-cancel-form { background: var(--sage); border-radius: 6px; }
-.zonify-secondary .booking-facts dd, .zonify-secondary .shop-detail dd { overflow-wrap: anywhere; }
-.zonify-secondary .payment-form fieldset { border-color: var(--line); border-radius: 6px; background: var(--sage); }
-.zonify-secondary .payment-qr { border-color: var(--line); border-radius: 8px; }
-.zonify-secondary .payment-refund { background: #fff1e7; border-radius: 6px; }
-.zonify-secondary .shop-detail { padding: 36px; }
-.zonify-secondary .shop-category { padding: 8px 12px; background: var(--sage); border-radius: 6px; color: #41563f; }
-.zonify-secondary .shop-description { line-height: 1.8; overflow-wrap: anywhere; }
-.zonify-secondary .report-cards { gap: 16px; }
-.zonify-secondary .report-cards > div { background: var(--sage); padding: 20px; }
-.zonify-secondary .report-cards dd { font-variant-numeric: tabular-nums; }
-.zonify-secondary .report-type button[aria-pressed="true"] { background: var(--green); color: white; border-color: var(--green); }
-.zonify-secondary .report-track { background: #e4eade; }
+.zonify-secondary .booking-card-heading { align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.zonify-secondary .booking-card-heading :is(h2,h3) { font-size: 24px; }
+.zonify-secondary .booking-status { border-radius: 6px; padding: 5px 10px; font-size: 12px; white-space: nowrap; background: var(--available); color: var(--available-ink); }
+.zonify-secondary .booking-status.held { background: var(--held); color: var(--held-ink); }
+.zonify-secondary .booking-status.pending_payment, .zonify-secondary .booking-status.payment_review { background: #fbe5d9; color: #7a3d20; }
+.zonify-secondary .booking-status.cancelled, .zonify-secondary .booking-status.expired { background: var(--unavailable); color: var(--unavailable-ink); }
+.zonify-secondary .booking-reference { color: var(--muted); font-size: 12px; }
+.zonify-secondary .booking-facts { margin-block: 24px; }
+.zonify-secondary .booking-facts > div { grid-template-columns: 180px minmax(0,1fr); padding-block: 16px; }
+.zonify-secondary .booking-facts dd, .zonify-secondary .shop-detail dd { overflow-wrap: anywhere; font-weight: 550; }
+.zonify-secondary .booking-facts > div:last-child dd { font-size: 26px; font-weight: 650; }
+.zonify-secondary .booking-expiry { background: #fff5dd; border-color: #e9d5a5; border-radius: 8px; grid-template-columns: minmax(0,1fr) auto; color: var(--held-ink); padding: 16px 20px; }
+.zonify-secondary .booking-expiry strong { font-size: 26px; }
+.zonify-secondary .booking-expiry small { font-size: 12px; color: var(--held-ink); }
+.zonify-secondary .booking-buttons { gap: 12px 20px; }
+.zonify-secondary .booking-cancel-form { background: var(--cream); border-radius: 8px; }
+.zonify-secondary .booking-detail { padding: 36px; }
+.zonify-secondary .booking-detail .booking-card-heading h2 { font-size: 32px; }
+.zonify-secondary .payment-panel { padding-top: 28px; margin-top: 28px; }
+.zonify-secondary .payment-panel h3 { font-size: 26px; margin-bottom: 12px; }
+.zonify-secondary .payment-form fieldset { border: 1px solid var(--line); border-radius: 8px; background: var(--cream); padding: 24px; gap: 12px; }
+.zonify-secondary .payment-form legend { font-size: 17px; }
+.zonify-secondary .payment-form input:not([type="checkbox"]), .zonify-secondary .payment-form textarea { min-height: 50px; border-color: var(--line); color: var(--green); }
+.zonify-secondary .payment-form input[type="file"] { min-height: 64px; border: 1px dashed #b5c0b0; }
+.zonify-secondary .payment-form input::file-selector-button { font: inherit; color: var(--green); background: var(--sage); border: 0; border-radius: 6px; padding: 10px 14px; margin-right: 12px; cursor: pointer; }
+.zonify-secondary .payment-check { font-size: 14px; }
+.zonify-secondary .payment-check input { width: 20px; height: 20px; }
+.zonify-secondary .payment-qr { border-color: var(--line); border-radius: 12px; }
+.zonify-secondary .payment-refund { background: #fff1e7; border-radius: 8px; }
+.zonify-secondary .payment-history summary { min-height: 44px; }
+.zonify-secondary .shop-detail { position: relative; padding: 36px; }
+.zonify-secondary .shop-detail-mark { float: right; display: flex; align-items: center; justify-content: center; width: 100px; height: 100px; border-radius: 12px; background: var(--sage); margin: 0 0 28px 28px; }
+.zonify-secondary .shop-detail-mark .icon { width: 50px; height: 50px; }
+.zonify-secondary .shop-category { padding: 0; background: none; border-radius: 0; color: var(--orange); font-size: 14px; }
+.zonify-secondary .shop-category .icon { display: none; }
+.zonify-secondary .shop-description { font-size: clamp(22px,2.3vw,30px); font-weight: 550; line-height: 1.7; margin-block: 16px 32px; overflow-wrap: anywhere; max-width: 760px; }
+.zonify-secondary .shop-detail dl { clear: both; border-top: 1px solid var(--line); }
+.zonify-secondary .shop-detail dl > div { grid-template-columns: 180px minmax(0,1fr); padding-block: 20px; }
+.zonify-secondary .shop-detail .catalog-note { line-height: 1.8; }
+.zonify-secondary .report-cards { gap: 0; margin-block: 24px; padding-block: 12px; border-block: 1px solid var(--line); }
+.zonify-secondary .report-cards > div { border: 0; border-radius: 0; background: none; padding: 12px 24px; }
+.zonify-secondary .report-cards > div + div { border-left: 1px solid var(--line); }
+.zonify-secondary .report-cards dd { font-size: 28px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.zonify-secondary .report-type button[aria-pressed="true"] { background: var(--green); color: var(--surface); border-color: var(--green); }
+.zonify-secondary .report-track { background: var(--sage); }
+.zonify-secondary .report-trend { padding: 24px; }
+.zonify-secondary .report-trend h3 { margin-top: 0; }
 .zonify-secondary .report-trend ul { padding: 0; list-style: none; }
 .zonify-secondary .report-trend strong { overflow-wrap: anywhere; }
 .zonify-secondary .secondary-state-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 24px; }
-.zonify-secondary .secondary-skip { position: absolute; top: 8px; left: 16px; z-index: 50; padding: 10px 16px; background: var(--lime); color: var(--green); border-radius: 6px; transform: translateY(-160%); }
+.zonify-secondary .secondary-skip { position: absolute; top: 8px; left: 16px; z-index: 50; padding: 10px 16px; background: var(--green); color: var(--surface); border-radius: 8px; transform: translateY(-160%); }
 .zonify-secondary .secondary-skip:focus { transform: translateY(0); }
+.zonify-secondary .secondary-footer { margin-top: auto; padding-block: 24px; border-top: 1px solid var(--line); }
+.zonify-secondary .secondary-footer .brand span { font-size: 24px; }
+.zonify-secondary .secondary-footer .brand .icon { width: 26px; height: 26px; }
+.zonify-secondary .secondary-footer p { font-size: 12px; color: var(--muted); }
 @media (max-width: 1000px) {
-  .zonify-secondary :is(.container, .account-page, .admin-page) { width: calc(100% - 64px); }
+  .zonify-secondary :is(.container,.account-page,.admin-page,.secondary-auth) { width: calc(100% - 64px); }
   .zonify-secondary .account-menu { gap: 8px 16px; }
-  .zonify-secondary .secondary-auth { gap: 32px; }
-  .zonify-secondary .booking-card-heading { flex-wrap: wrap; }
+  .zonify-secondary .secondary-auth .heading-copy { padding: 28px; }
+  .zonify-secondary .secondary-auth .account-card { padding: 32px; }
+  .zonify-secondary .secondary-auth h1 { font-size: 36px; }
+  .zonify-secondary .report-cards > div { padding-inline: 16px; }
 }
 @media (max-width: 760px) {
-  .zonify-secondary :is(.container, .account-page, .admin-page) { width: calc(100% - 36px); }
-  .zonify-secondary .header-inner { flex-wrap: wrap; gap: 8px 20px; padding-block: 18px; }
-  .zonify-secondary .header-inner > nav { flex: 1 1 100%; }
+  .zonify-secondary :is(.container,.account-page,.admin-page,.secondary-auth) { width: calc(100% - 40px); }
+  .zonify-secondary .header-inner { flex-wrap: wrap; gap: 8px 20px; padding-block: 14px; }
+  .zonify-secondary .header-inner > nav { flex: 1 1 100%; gap: 16px; flex-wrap: wrap; }
   .zonify-secondary .account-menu { justify-content: flex-start; gap: 4px 16px; font-size: 13px; }
-  .zonify-secondary .account-name { max-width: 180px; }
+  .zonify-secondary .secondary-register-link { font-size: 13px; padding-left: 16px; }
+  .zonify-secondary .account-name { max-width: 170px; }
   .zonify-secondary .account-menu > a:last-of-type { padding-inline: 12px; }
-  .zonify-secondary .brand span { font-size: 29px; }
+  .zonify-secondary .brand span { font-size: 27px; }
   .zonify-secondary .brand > .icon { width: 30px; height: 30px; }
-  .zonify-secondary :is(.account-page, .admin-page) { margin-top: 28px; margin-bottom: 48px; }
+  .zonify-secondary :is(.account-page,.admin-page) { margin-top: 28px; margin-bottom: 44px; }
   .zonify-secondary .account-heading { margin-bottom: 24px; }
-  .zonify-secondary .account-heading h1 { margin-top: 20px; font-size: 32px; }
-  .zonify-secondary .secondary-auth { display: block; }
-  .zonify-secondary .secondary-auth .account-heading { padding-top: 0; }
-  .zonify-secondary .secondary-auth h1 { font-size: 36px; }
-  .zonify-secondary :is(.account-card, .booking-card, .shop-detail) { padding: 24px; }
-  .zonify-secondary .profile-grid { grid-template-columns: 1fr; }
-  .zonify-secondary .admin-tabs button { padding-inline: 12px; font-size: 13px; }
+  .zonify-secondary .account-heading h1 { font-size: 32px; margin-top: 16px; }
+  .zonify-secondary .secondary-auth { display: grid; grid-template-columns: 1fr; margin-top: 28px; }
+  .zonify-secondary .secondary-auth .heading-copy { padding: 24px; }
+  .zonify-secondary .secondary-auth h1 { font-size: 32px; }
+  .zonify-secondary .auth-market-photo { min-height: 180px; flex: none; }
+  .zonify-secondary .secondary-auth .account-card { padding: 28px 24px; }
+  .zonify-secondary :is(.account-card,.booking-card,.booking-detail,.shop-detail) { padding: 24px; }
+  .zonify-secondary .profile-grid { grid-template-columns: 1fr; gap: 24px; }
+  .zonify-secondary .booking-grid { grid-template-columns: 1fr; }
+  .zonify-secondary .admin-tabs { gap: 4px; }
+  .zonify-secondary .admin-navigation { display: block; }
+  .zonify-secondary .admin-navigation .admin-tabs { display: none; }
+  .zonify-secondary .admin-section-picker { display: grid; gap: 8px; font-size: 14px; }
+  .zonify-secondary .admin-section-picker select { width: 100%; min-height: 52px; padding: 12px; border: 1px solid var(--line); background: var(--surface); }
+  .zonify-secondary .admin-navigation .admin-tabs + .admin-tabs { border-left: 0; border-top: 1px solid var(--line); padding-left: 0; padding-top: 8px; margin-top: 8px; }
+
+  .zonify-secondary .admin-tabs button { padding-inline: 10px; font-size: 13px; }
   .zonify-secondary .admin-workspace > section { padding: 20px 16px; margin-top: 24px; }
-  .zonify-secondary :is(.admin-filters, .booking-filters) { padding: 16px; gap: 16px; }
-  .zonify-secondary :is(.admin-filters, .booking-filters) label { min-width: 100%; }
-  .zonify-secondary .admin-section-heading h2 { font-size: 27px; }
-  .zonify-secondary .report-cards > div { padding: 14px; }
+  .zonify-secondary :is(.admin-filters,.booking-filters) { padding: 16px; gap: 16px; }
+  .zonify-secondary :is(.admin-filters,.booking-filters) label { min-width: 100%; }
+  .zonify-secondary .admin-section-heading { flex-wrap: wrap; }
+  .zonify-secondary .admin-section-heading h2 { font-size: 26px; }
+  .zonify-secondary .admin-editor { padding: 20px 16px; }
+  .zonify-secondary .admin-floor-layout { grid-template-columns: 1fr; }
+  .zonify-secondary .live-map { padding: 12px; }
+  .zonify-secondary .live-map .legend { gap: 10px; }
+  .zonify-secondary .live-map .map-scroll { margin: 24px 12px 18px 38px; }
+  .zonify-secondary .report-cards { grid-template-columns: repeat(2,minmax(0,1fr)); row-gap: 16px; }
+  .zonify-secondary .report-cards > div { padding: 8px 12px; }
+  .zonify-secondary .report-cards > div:nth-child(odd) { border-left: 0; }
   .zonify-secondary .report-cards dd { font-size: 22px; }
   .zonify-secondary .report-trend { padding: 16px 12px; }
-  .zonify-secondary .report-trend li { grid-template-columns: 76px minmax(0, 1fr) 78px; gap: 8px; font-size: 11px; }
+  .zonify-secondary .report-trend li { grid-template-columns: 76px minmax(0,1fr) 78px; gap: 8px; font-size: 12px; }
+  .zonify-secondary .booking-facts > div, .zonify-secondary .shop-detail dl > div { grid-template-columns: 1fr; gap: 6px; }
   .zonify-secondary .booking-expiry { grid-template-columns: 1fr; }
   .zonify-secondary .booking-expiry small { grid-column: auto; }
-  .zonify-secondary .pagination { gap: 12px; flex-wrap: wrap; }
+  .zonify-secondary .payment-form fieldset { padding: 18px; }
+  .zonify-secondary .shop-detail-mark { width: 64px; height: 64px; margin-left: 16px; }
+  .zonify-secondary .shop-detail-mark .icon { width: 34px; height: 34px; }
+  .zonify-secondary .shop-description { clear: both; margin-bottom: 24px; }
+  .zonify-secondary .pagination { flex-wrap: wrap; gap: 12px; }
+  .zonify-secondary .secondary-footer .footer-inner { flex-direction: column; align-items: flex-start; gap: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .zonify-secondary .button, .zonify-secondary .slot { transition: none; }
+  .zonify-secondary .button:hover:not(:disabled) { transform: none; }
 }

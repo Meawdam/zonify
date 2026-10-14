@@ -16,11 +16,12 @@ export function MarketExplorer({ initialDate, initialMarket, initialStall, logge
   }
   return <>
     <section id="markets" className="markets-section"><div className="container">
-      <div className="section-top"><h2>เริ่มจากตลาดที่คุณชอบ</h2><p>เลือกตลาดแล้วสำรวจพื้นที่และร้านค้า</p></div>
-      {markets.loading ? <p className="catalog-state" role="status">กำลังโหลดตลาด…</p> : markets.error ? <p className="catalog-state" role="alert">โหลดตลาดไม่ได้ <button className="text-link" onClick={markets.retry}>ลองโหลดตลาดอีกครั้ง</button></p> : !markets.data?.items.length ? <p className="catalog-state">ยังไม่มีตลาดที่เปิดแสดงข้อมูล</p> : <div className="market-gallery">{markets.data.items.map(market => <article className="market-card" key={market.id}>
+      <div className="section-top market-heading"><h2>เริ่มจากตลาดที่คุณชอบ</h2><p>เลือกตลาดแล้วสำรวจพื้นที่และร้านค้า</p></div>
+      {markets.loading ? <p className="catalog-state" role="status">กำลังโหลดตลาด…</p> : markets.error ? <p className="catalog-state" role="alert">โหลดตลาดไม่ได้ <button className="text-link" onClick={markets.retry}>ลองโหลดตลาดอีกครั้ง</button></p> : !markets.data?.items.length ? <p className="catalog-state">ยังไม่มีตลาดที่เปิดแสดงข้อมูล</p> : <div className="market-gallery">{markets.data.items.map(market => <article className={`market-card${current?.id === market.id ? " is-active" : ""}`} key={market.id}>
         <button className={`market-image photo-${market.photo}`} aria-label={`ดูผัง ${market.name}`} onClick={() => viewMarket(market.id)}/>
-        <div className="market-caption"><h3>{market.name}</h3><span>{market.minPrice === null ? "ยังไม่มีราคา" : `เริ่ม ${baht(market.minPrice)} บาท / วัน`}</span></div>
-        <div className="market-meta"><span><Icon name="pin"/>{market.location}</span><button className="text-link" onClick={() => viewMarket(market.id)}>ดูผังตลาด <Icon/></button></div>
+        <div className="market-caption"><h3>{market.name}</h3></div>
+        <div className="market-facts"><span><Icon name="pin"/>{market.location}</span><span className="market-price">{market.minPrice === null ? "ยังไม่มีราคา" : <>เริ่ม <strong>{baht(market.minPrice)}</strong> บาท / วัน</>}</span></div>
+        <div className="market-meta"><button className="text-link" onClick={() => viewMarket(market.id)}>ดูผังตลาด <Icon/></button></div>
       </article>)}</div>}
     </div></section>
     <section id="floor-plan" className="plan-section"><div className="container">

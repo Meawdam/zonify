@@ -24,7 +24,7 @@ export function LandingPage({ user, initialDate, initialMarket, initialStall }: 
       <Brand/>
       <button className="mobile-menu" aria-label="เปิดเมนู" aria-expanded={menu} aria-controls="main-nav" onClick={() => setMenu(!menu)}>เมนู</button>
       <nav id="main-nav" className={menu ? "nav open" : "nav"} aria-label="เมนูหลัก">
-        <a href="#markets" onClick={() => setMenu(false)}>สำรวจตลาด</a><a href="#shops" onClick={() => setMenu(false)}>ค้นหาร้านค้า</a>
+        <a href="#markets" onClick={() => setMenu(false)}>สำรวจตลาด</a><a href="#floor-plan" onClick={() => setMenu(false)}>ดูผังล็อก</a><a href="#shops" onClick={() => setMenu(false)}>ค้นหาร้านค้า</a>
         <button className="nav-link" onClick={() => { setDialog("owner"); setMenu(false); }}>สำหรับเจ้าของตลาด</button>
         <AccountMenu user={user}/>
       </nav>
@@ -34,10 +34,10 @@ export function LandingPage({ user, initialDate, initialMarket, initialStall }: 
         <div className="hero-copy"><h1>ตลาดที่ใช่<br/><span>พื้นที่ของคุณ</span></h1><p>เลือกตลาด ดูผังล็อก และค้นหาร้านที่อยากแวะ</p>
           <div className="hero-actions"><a href="#markets" className="button button-green">เริ่มเลือกตลาด <Icon/></a><a href="#how-it-works" className="text-link">ดูวิธีสำรวจ <Icon/></a></div>
         </div>
-        <figure className="hero-media"><div className="hero-visual"><Image src="/images/sunseto-hero.webp" alt="บรรยากาศตลาดริมคลองเชียงใหม่ยามเย็น" fill loading="eager" fetchPriority="high" sizes="(max-width: 680px) 100vw, 55vw"/></div><figcaption><span>บรรยากาศตลาดเชียงใหม่</span><a href="#floor-plan">สำรวจพื้นที่ <Icon/></a></figcaption></figure>
+        <figure className="hero-media"><div className="hero-visual"><Image src="/images/zonify-editorial-hero.webp" alt="ภาพจำลองบรรยากาศตลาดริมคลองเชียงใหม่ยามเย็น" fill loading="eager" fetchPriority="high" sizes="(max-width: 800px) 100vw, 55vw"/></div><figcaption><span>บรรยากาศตลาดเชียงใหม่</span><a href="#floor-plan">สำรวจพื้นที่ <Icon/></a></figcaption></figure>
       </div>
       <div id="how-it-works" className="container steps" aria-label="ขั้นตอนการสำรวจตลาด">
-        {[{ title: "เลือกตลาด", copy: "ค้นหาตลาดที่ตรงกับสไตล์ของคุณ" }, { title: "ดูล็อกบนผัง", copy: "ดูตำแหน่ง ขนาด ราคา และสถานะ" }, { title: "ค้นหาร้านค้า", copy: "ดูร้านที่สนใจและตำแหน่งบนผัง" }].map((step, index) => <div className="step" key={step.title}><span className="step-number">0{index + 1}</span><h2>{step.title}</h2><p>{step.copy}</p></div>)}
+        {[{ title: "เลือกตลาด", copy: "ค้นหาตลาดที่ตรงกับสไตล์ของคุณ", icon: "pin" as const }, { title: "ดูล็อกบนผัง", copy: "ดูตำแหน่ง ขนาด ราคา และสถานะ", icon: "grid" as const }, { title: "ค้นหาร้านค้า", copy: "ดูร้านที่สนใจและตำแหน่งบนผัง", icon: "store" as const }].map((step, index) => <div className="step" key={step.title}><div className="step-mark"><span className="step-number">0{index + 1}</span><span className="step-icon"><Icon name={step.icon}/></span></div><div><h2>{step.title}</h2><p>{step.copy}</p></div></div>)}
       </div></section>
       <MarketExplorer initialDate={initialDate} initialMarket={initialMarket} initialStall={initialStall} loggedIn={!!user}/>
       <Advertisements/>

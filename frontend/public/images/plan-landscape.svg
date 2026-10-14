@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 480" preserveAspectRatio="none">
+  <defs>
+    <g id="tree"><circle r="15" fill="#9eb181"/><circle cx="-7" cy="-5" r="10" fill="#aabc91"/><circle cx="7" cy="-4" r="10" fill="#aabc91"/><circle cy="7" r="10" fill="#94aa78"/><circle cx="-4" cy="-3" r="2" fill="#819968"/><circle cx="6" cy="4" r="2" fill="#819968"/></g>
+  </defs>
+  <rect width="900" height="480" fill="#eee9da"/>
+  <path d="M0 0H65Q45 65 61 120T57 240T62 360T54 480H0Z" fill="#c6dfe3"/>
+  <path d="M25 0Q10 65 28 120T24 240T29 360T22 480" fill="none" stroke="#afd0d7" stroke-width="3"/>
+  <rect x="72" y="12" width="816" height="456" rx="8" fill="#e1e5d3"/>
+  <rect x="101" y="32" width="763" height="410" rx="6" fill="#f3eedf"/>
+  <g><use href="#tree" x="100" y="21"/><use href="#tree" x="218" y="21"/><use href="#tree" x="342" y="21"/><use href="#tree" x="468" y="21"/><use href="#tree" x="592" y="21"/><use href="#tree" x="716" y="21"/><use href="#tree" x="861" y="21"/><use href="#tree" x="87" y="113"/><use href="#tree" x="87" y="220"/><use href="#tree" x="87" y="327"/><use href="#tree" x="875" y="113"/><use href="#tree" x="875" y="220"/><use href="#tree" x="875" y="327"/><use href="#tree" x="100" y="458"/><use href="#tree" x="218" y="458"/><use href="#tree" x="342" y="458"/><use href="#tree" x="716" y="458"/><use href="#tree" x="861" y="458"/></g>
+</svg>

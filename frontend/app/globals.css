@@ -120,7 +120,16 @@
   .account-name { max-width: 135px; }
 }
 
-:root { --cream: #faf7ef; --green: #243c32; --orange: #df7146; --sage: #d9e3cf; --muted: #62655d; --line: #ddd6c7; --font-sans: var(--font-thai); }
+/* One public/account/manager palette, shared by both page shells. */
+:root {
+  --cream: #f8f7f2; --green: #193c32; --orange: #b64b2e; --sage: #e9eee6;
+  --muted: #656d64; --line: #d9ddd4; --surface: #ffffff;
+  --available: #d6e5cf; --available-ink: #264833;
+  --booked: #eadbd1; --booked-ink: #674735;
+  --held: #f4dda1; --held-ink: #654a11;
+  --unavailable: #e2e5e3; --unavailable-ink: #4b5550;
+  --font-sans: var(--font-thai);
+}
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: 24px; }
 body { margin: 0; color: var(--green); background: var(--cream); font-family: var(--font-thai), Tahoma, sans-serif; font-size: 16px; line-height: 1.65; }
