@@ -9,5 +9,5 @@ export default async function AdminPage() {
   if (!user) redirect("/login");
   if (user.role === "customer") return <SecondaryShell title="คุณไม่มีสิทธิ์เข้าหน้าจัดการ" subtitle="หน้านี้สำหรับผู้จัดการและเจ้าของ" user={user}><div className="account-card"><Link className="text-link" href="/">กลับหน้าแรก</Link></div></SecondaryShell>;
   const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
-  return <SecondaryShell title="จัดการตลาด" subtitle="ข้อมูลหลัก ผังล็อก และร้านค้า • บันทึกแล้วแสดงบนเว็บไซต์ทันที" user={user} wide><AdminWorkspace user={user} today={today}/></SecondaryShell>;
+  return <SecondaryShell title="จัดการตลาด" subtitle="ข้อมูลหลัก ผังล็อก และร้านค้า • ข้อมูลสาธารณะอาจใช้เวลาสักครู่ในการอัปเดต" user={user} wide><AdminWorkspace user={user} today={today}/></SecondaryShell>;
 }

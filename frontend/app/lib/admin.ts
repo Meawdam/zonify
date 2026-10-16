@@ -1,10 +1,21 @@
 import { ApiError } from "./auth";
 export type AdminKind = "markets" | "categories" | "zones" | "stalls" | "shops" | "advertisements";
-export type AdminRow = { id: string; version: number; [key: string]: string | number | boolean | null };
-export type AdminReferences = Record<"markets" | "categories" | "zones" | "stalls" | "shops", AdminRow[]>;
-export type AdminResults = { items: AdminRow[]; total: number; page: number; pages: number };
+type RowBase = { id: string; version: number };
+type Named = { name: string; active: boolean; order: number };
+export type AdminResources = {
+  markets: RowBase & Named & { location: string; description: string; photo: string; landmark: string; entrance: string };
+  categories: RowBase & Named;
+  zones: RowBase & Named & { marketId: string; description: string };
+  stalls: RowBase & { marketId: string; zoneId: string | null; code: string; row: string; rowOrder: number; column: number; width: number; depth: number; pricePerDay: number; description: string; enabled: boolean };
+  shops: RowBase & { marketId: string; categoryId: string; stallId: string | null; name: string; description: string; hours: string; active: boolean };
+  advertisements: RowBase & Named & { marketId: string; shopId: string | null; description: string; startsOn: string; endsOn: string; photo: string };
+};
+// The dynamic editor uses an explicit draft shape; API references/results keep resource types.
+export type AdminRow = RowBase & Partial<Named & { marketId: string; categoryId: string; zoneId: string | null; stallId: string | null; shopId: string | null; location: string; description: string; photo: string; landmark: string; entrance: string; code: string; row: string; rowOrder: number; column: number; width: number; depth: number; pricePerDay: number; enabled: boolean; hours: string; startsOn: string; endsOn: string }>;
+export type AdminReferences = { [K in Exclude<AdminKind, "advertisements">]: AdminResources[K][] };
+export type AdminResults<K extends AdminKind = AdminKind> = { items: AdminResources[K][]; total: number; page: number; pages: number };
 export const adminLabels: Record<AdminKind, string> = { markets: "ตลาด", categories: "หมวดหมู่", zones: "โซน", stalls: "ล็อก", shops: "ร้านค้า", advertisements: "โฆษณา" };
-export type Field = { key: string; label: string; type: "text" | "textarea" | "number" | "select" | "checkbox" | "date"; optional?: boolean; min?: number; max?: number; step?: number };
+export type Field = { key: Exclude<keyof AdminRow, "id" | "version">; label: string; type: "text" | "textarea" | "number" | "select" | "checkbox" | "date"; optional?: boolean; min?: number; max?: number; step?: number };
 const name: Field = { key: "name", label: "ชื่อ", type: "text", max: 100 };
 const description: Field = { key: "description", label: "คำอธิบาย", type: "textarea", optional: true, max: 2000 };
 const market: Field = { key: "marketId", label: "ตลาด", type: "select" };
@@ -21,7 +32,7 @@ export const adminFields: Record<AdminKind, Field[]> = {
 };
 export function defaults(kind: AdminKind, marketId: string) {
   const values: AdminRow = { id: "", version: 0 };
-  for (const field of adminFields[kind]) values[field.key] = field.type === "checkbox" ? true : field.type === "number" ? (field.min ?? 0) : "";
+  for (const field of adminFields[kind]) Object.assign(values, { [field.key]: field.type === "checkbox" ? true : field.type === "number" ? (field.min ?? 0) : "" });
   if ("marketId" in values) values.marketId = marketId;
   if (kind === "markets") { values.photo = "canal"; values.entrance = "ทางเข้า"; }
   if (kind === "stalls") { values.width = 2; values.depth = 2; }

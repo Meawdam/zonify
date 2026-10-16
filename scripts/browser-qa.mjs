@@ -1,4 +1,4 @@
-// Run against the production frontend on :3000; this script owns an isolated API on :4000.
+// Run against QA_BASE (default :3000); this script owns an isolated API on QA_API_PORT (default :4000).
 import { createRequire } from "node:module";
 import { dirname, resolve, join } from "node:path";
 import { pathToFileURL, fileURLToPath } from "node:url";
@@ -12,7 +12,8 @@ const requireBackend = createRequire(join(root, "backend/package.json"));
 const mongoose = requireBackend("mongoose"), bcrypt = requireBackend("bcrypt");
 const { MongoMemoryServer } = requireBackend("mongodb-memory-server");
 const { chromium } = await import(process.env.QA_PLAYWRIGHT_MODULE ? pathToFileURL(resolve(process.env.QA_PLAYWRIGHT_MODULE)).href : "playwright");
-const tls = process.env.QA_TLS === "1", base = tls ? "https://localhost:3443" : "http://localhost:3000";
+const tls = process.env.QA_TLS === "1", base = process.env.QA_BASE ?? (tls ? "https://localhost:3443" : "http://localhost:3000");
+const apiPort = Number(process.env.QA_API_PORT ?? 4000);
 const output = resolve(process.env.QA_OUTPUT ?? join(root, ".data/browser-qa")); await mkdir(output, { recursive: true });
 const password = " browser-qa-123 ", updatedPassword = " changed-qa-456 ";
 let mongo, server, browser, proxy, stopWorker;
@@ -26,7 +27,7 @@ try {
   const { UserModel } = await load("modules/users/schema/user.schema.js");
   const { SessionModel } = await load("modules/users/schema/session.schema.js");
   for (const role of ["manager", "owner"]) await UserModel.create({ name: "Browser QA " + role, email: role + "@browser.qa.test", role, password: await bcrypt.hash(password, 4) });
-  server = app.listen(4000); await once(server, "listening"); stopWorker = (await load("modules/bookings/booking.worker.js")).startBookingExpiry();
+  server = app.listen(apiPort); await once(server, "listening"); stopWorker = (await load("modules/bookings/booking.worker.js")).startBookingExpiry();
   if (tls) {
     proxy = spawn(process.execPath, [join(root, "scripts/local-https.mjs")], { env: process.env, windowsHide: true, stdio: ["ignore", "pipe", "pipe"] });
     await new Promise((done, reject) => { const timer = setTimeout(() => reject(new Error("HTTPS proxy startup timed out")), 10000); proxy.stdout.once("data", () => { clearTimeout(timer); done(); }); proxy.once("exit", () => { clearTimeout(timer); reject(new Error("HTTPS proxy failed; check TLS_CERT/TLS_KEY and :3443")); }); });
@@ -52,20 +53,31 @@ try {
   await page.getByLabel("รหัสผ่านเดิม", { exact: true }).fill(password); await page.getByLabel("รหัสผ่านใหม่", { exact: true }).fill(updatedPassword); await page.getByLabel("ยืนยันรหัสผ่านใหม่", { exact: true }).fill(updatedPassword);
   await page.getByRole("button", { name: "เปลี่ยนรหัสผ่าน", exact: true }).click(); await page.waitForURL("**/login?notice=password-changed");
   assert.equal((await second.request.get(base + "/api/users/me")).status(), 401); await second.close(); await login(page, email, updatedPassword);
-  await page.setViewportSize({ width: 390, height: 844 }); assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)); await page.screenshot({ path: join(output, "profile-mobile.png"), fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 }); assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)); await page.screenshot({ path: join(output, "profile-mobile.png"), fullPage: true, caret: "initial" });
   const oldCookie = (await context.cookies(base)).find(c => c.name === "zonify_session"); await page.getByRole("button", { name: "ออกจากระบบ", exact: true }).click(); await page.waitForURL("**/login");
   assert(!(await context.cookies(base)).some(c => c.name === "zonify_session"));
   assert.equal((await context.request.get(base + "/api/users/me", { headers: { Cookie: `zonify_session=${oldCookie.value}` } })).status(), 401);
   await login(page, email, updatedPassword); await SessionModel.updateMany({}, { $set: { expiresAt: new Date(0) } }); await page.reload(); await page.waitForURL("**/login");
   for (const role of ["manager", "owner"]) {
-    await login(page, role + "@browser.qa.test"); await page.goto(base + "/admin"); await page.getByRole("button", { name: "Dashboard", exact: true }).click(); await page.getByRole("heading", { name: "ภาพรวมตลาด", exact: true }).waitFor();
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await login(page, role + "@browser.qa.test"); await page.goto(base + "/admin");
+    await page.getByRole("button", { name: "เพิ่มตลาด", exact: true }).click();
+    await page.locator("#admin-markets-name").fill("ตลาด QA " + role); await page.locator("#admin-markets-location").fill("ข้อมูลทดสอบแยก");
+    await page.getByRole("button", { name: "บันทึกข้อมูล", exact: true }).click(); await page.getByRole("status").filter({ hasText: "บันทึกข้อมูลเรียบร้อยแล้ว" }).waitFor();
+    const row = page.getByRole("row").filter({ hasText: "ตลาด QA " + role }); await row.getByRole("button", { name: "แก้ไข", exact: true }).click();
+    await page.locator("#admin-markets-name").fill("ตลาด QA แก้ไข " + role); await page.getByRole("button", { name: "บันทึกข้อมูล", exact: true }).click();
+    await page.getByRole("row").filter({ hasText: "ตลาด QA แก้ไข " + role }).waitFor();
+    await page.getByRole("button", { name: "จัดผังล็อก", exact: true }).click(); await page.getByRole("heading", { name: "จัดผังล็อก", exact: true }).waitFor();
+    await page.getByRole("button", { name: "ผู้ใช้", exact: true }).click(); await page.getByRole("region", { name: "ตารางผู้ใช้", exact: true }).waitFor();
+    await page.getByRole("button", { name: "Dashboard", exact: true }).click(); await page.getByRole("heading", { name: "ภาพรวมตลาด", exact: true }).waitFor();
     await page.getByRole("button", { name: "รายงาน", exact: true }).click(); await page.getByRole("link", { name: "ดาวน์โหลด CSV ของตัวกรองที่แสดง", exact: true }).waitFor();
     const download = page.waitForEvent("download"); await page.getByRole("link", { name: "ดาวน์โหลด CSV ของตัวกรองที่แสดง", exact: true }).click(); const file = await download; assert.equal(file.suggestedFilename(), "zonify-bookings.csv"); await file.saveAs(join(output, role + "-bookings.csv"));
     assert.equal((await context.request.get(base + "/api/owner/reports/revenue")).status(), role === "owner" ? 200 : 403);
+    await page.setViewportSize({ width: 390, height: 844 });
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
-    await page.screenshot({ path: join(output, role + "-report-mobile.png"), fullPage: true }); await page.getByRole("button", { name: "ออกจากระบบ", exact: true }).click(); await page.waitForURL("**/login");
+    await page.screenshot({ path: join(output, role + "-report-mobile.png"), fullPage: true, caret: "initial" }); await page.getByRole("button", { name: "ออกจากระบบ", exact: true }).click(); await page.waitForURL("**/login");
   }
-  await page.goto(base + "/"); await page.getByRole("heading", { name: "ข่าวจากตลาด", exact: true }).waitFor(); assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)); await page.screenshot({ path: join(output, "public-mobile.png"), fullPage: true });
+  await page.goto(base + "/"); await page.getByRole("heading", { name: "ข่าวจากตลาด", exact: true }).waitFor(); assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)); await page.screenshot({ path: join(output, "public-mobile.png"), fullPage: true, caret: "initial" });
   assert.deepEqual(errors, []); console.log(`PASS ${tls ? "HTTPS" : "HTTP"}: registration/login/refresh/profile/keyboard/password revocation/logout/expiry/roles/dashboard/CSV/mobile; private cookie; no browser errors or warnings`);
 } finally {
   await browser?.close(); proxy?.kill(); stopWorker?.(); if (server) await new Promise(done => server.close(done)); await mongoose.disconnect(); await mongo?.stop();

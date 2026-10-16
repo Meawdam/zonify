@@ -3,10 +3,13 @@ import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError } from "../lib/auth";
-import { baht, type Market } from "../lib/catalog";
+import { baht, validDate, type Market } from "../lib/catalog";
 import { usePublicData } from "../lib/use-public-data";
 import { bookingDate, bookingTime, bookingRequest, bookingStatusLabels, floorLink, type Booking, type BookingResults, type BookingStatus } from "../lib/bookings";
 import { PaymentPanel } from "./payment-panel";
+import { DataWarning } from "./data-warning";
+import { useURLState } from "../lib/use-url-state";
+import { pageNumber, resourceId } from "../lib/url-state";
 
 function useBookingClock() {
   const [now, setNow] = useState<number | null>(null);
@@ -40,7 +43,7 @@ function BookingControl({ booking, manager, holdsOnly, now, refresh, onNotice }:
     try {
       await bookingRequest<Booking>(path, action === "confirm" ? {} : { reason });
       setCancel(false); setReason("");
-      const message = action === "confirm" ? "ยืนยันรายการจองแล้ว สถานะรอชำระเงิน" : manager && holdsOnly ? "คืนล็อกแล้ว" : "ยกเลิกรายการแล้ว";
+      const message = action === "confirm" ? "เข้าสู่ขั้นตอนชำระเงิน กรุณาส่งสลิปภายใน 30 นาที การจองจะสำเร็จเมื่อผู้จัดการตรวจรับเงินแล้ว" : manager && holdsOnly ? "คืนล็อกแล้ว" : "ยกเลิกรายการแล้ว";
       if (onNotice) onNotice(message); else setNotice(message);
       refresh();
     } catch (e) {
@@ -53,7 +56,7 @@ function BookingControl({ booking, manager, holdsOnly, now, refresh, onNotice }:
   return <div className="booking-controls">
     {error && <p className="form-alert" role="alert">{error}</p>}{notice && <p className="form-notice" role="status">{notice}</p>}
     <div className="booking-buttons">
-      {!manager && booking.status === "held" && <button className="button button-orange" disabled={busy || expired} onClick={() => mutate("confirm")}>{busy ? "กำลังบันทึก…" : "ยืนยันการจอง"}</button>}
+      {!manager && booking.status === "held" && <button className="button button-orange" disabled={busy || expired} onClick={() => mutate("confirm")}>{busy ? "กำลังบันทึก…" : "ดำเนินการชำระเงิน"}</button>}
       {canCancel && <button className="button button-white" disabled={busy} onClick={() => { setCancel(v => !v); setNotice(""); }}>{manager && holdsOnly ? "คืนล็อก" : "ยกเลิกรายการ"}</button>}
       <Link className="text-link" href={floorLink(booking)}>ดูตำแหน่งบนผัง</Link>
     </div>
@@ -64,12 +67,15 @@ function BookingControl({ booking, manager, holdsOnly, now, refresh, onNotice }:
 export function BookingDetail({ id }: { id: string }) {
   const result = usePublicData<Booking>("/api/bookings/" + encodeURIComponent(id), 5000, true), now = useBookingClock();
   if (result.loading && !result.data) return <p className="catalog-state" role="status">กำลังโหลดรายการจอง…</p>;
-  if (result.error) return <p className="catalog-state" role="alert">{result.error} <button className="text-link" onClick={result.retry}>ลองโหลดอีกครั้ง</button> <Link className="text-link" href="/bookings">กลับรายการของฉัน</Link></p>;
+  if (result.initialError) return <p className="catalog-state" role="alert">{result.initialError} <button className="text-link" onClick={result.retry}>ลองโหลดอีกครั้ง</button> <Link className="text-link" href="/bookings">กลับรายการของฉัน</Link>{result.status === 401 && <> <Link className="text-link" href={"/login?next=" + encodeURIComponent("/bookings/" + id)}>เข้าสู่ระบบอีกครั้ง</Link></>}</p>;
   if (!result.data) return null;
   const booking = result.data;
-  return <article className="booking-card booking-detail">
+  return <article key={booking.id} className="booking-card booking-detail">
+    <DataWarning error={result.refreshError} retry={result.retry}/>
     <div className="booking-card-heading"><h2>ล็อก {booking.stall.code}</h2><span className={"booking-status " + booking.status}>{bookingStatusLabels[booking.status]}</span></div>
     <p className="booking-reference">รหัสรายการ {booking.id}</p><BookingFacts booking={booking}/><Expiry booking={booking} now={now}/>
+    <ol className="booking-progress" aria-label="ขั้นตอนจอง">{(["held", "pending_payment", "payment_review", "confirmed"] as const).map((status, i) => <li key={status} aria-current={booking.status === status ? "step" : undefined}>{i + 1}. {status === "held" ? "พักล็อก · ตรวจรายละเอียด" : bookingStatusLabels[status]}</li>)}</ol>
+    <p className="form-description">{booking.status === "held" ? "ตรวจวันที่และราคา แล้วกดดำเนินการชำระเงินก่อนหมดเวลาพักล็อก" : booking.status === "pending_payment" ? "ชำระเงินและส่งสลิปภายในเวลาที่เหลือ ยังไม่ถือว่าจองสำเร็จ" : booking.status === "payment_review" ? "ส่งสลิปแล้ว กำลังรอตรวจเงินเข้า การจองจะสำเร็จเมื่อสถานะเป็นยืนยันแล้ว" : booking.status === "confirmed" ? "ผู้จัดการตรวจรับเงินแล้ว การจองสำเร็จ" : "รายการนี้สิ้นสุดแล้ว เลือกล็อกใหม่จากผังได้"}</p>
     {booking.cancelReason && <p className="form-description">เหตุผลที่ยกเลิก: {booking.cancelReason}</p>}
     <BookingControl booking={booking} manager={false} holdsOnly={false} now={now} refresh={result.retry}/>
     <PaymentPanel booking={booking} expired={deadline(booking, now)} refresh={result.retry}/>
@@ -78,21 +84,29 @@ export function BookingDetail({ id }: { id: string }) {
 }
 export function BookingList({ manager = false, holdsOnly = false, defaultStatus = "" }: { manager?: boolean; holdsOnly?: boolean; defaultStatus?: BookingStatus | "" }) {
   const [notice, setNotice] = useState("");
-  const [status, setStatus] = useState<BookingStatus | "">(defaultStatus), [date, setDate] = useState(""), [market, setMarket] = useState(""), [page, setPage] = useState(1);
+  const { params, update } = useURLState();
   const refs = usePublicData<{ items: Market[] }>("/api/markets");
+  const status = params.has("status") ? Object.keys(bookingStatusLabels).find(s => s === params.get("status")) ?? "" : defaultStatus;
+  const date = validDate(params.get("date") ?? "") ? params.get("date")! : "", requestedMarket = resourceId(params.get("market")), page = pageNumber(params.get("page"));
+  const market = !refs.data || refs.data.items.some(m => m.id === requestedMarket) ? requestedMarket : "";
+  function setStatus(value: string) { update({ status: value || "all", page: null }); }
+  function setDate(value: string) { update({ date: value, page: null }); }
+  function setMarket(value: string) { update({ market: value, page: null }); }
+  function setPage(value: number) { update({ page: value }); }
   const query = new URLSearchParams({ page: String(page), limit: "6", ...(status && !holdsOnly ? { status } : {}), ...(date ? { date } : {}), ...(market ? { market } : {}) });
   const result = usePublicData<BookingResults>((manager ? "/api/admin/" + (holdsOnly ? "holds" : "bookings") : "/api/bookings/me") + "?" + query, 5000, true), now = useBookingClock();
   return <section className="booking-list">
     {notice && <p className="form-notice" role="status">{notice}</p>}
     {manager && <div className="admin-section-heading"><div><h2>{holdsOnly ? "จัดการพักล็อก" : "จัดการรายการจอง"}</h2><p>ตรวจสถานะและข้อมูลผู้จอง ระบุเหตุผลก่อน{holdsOnly ? "คืนล็อก" : "ยกเลิก"}</p></div></div>}
     <div className="booking-filters">
-      {!holdsOnly && <label htmlFor="booking-status">สถานะ<select id="booking-status" aria-label="สถานะ" value={status} onChange={e => { setStatus(e.target.value as BookingStatus | ""); setPage(1); }}><option value="">ทุกสถานะ</option>{Object.entries(bookingStatusLabels).map(([key, label]) => <option value={key} key={key}>{label}</option>)}</select></label>}
-      <label htmlFor="booking-date">วันที่จอง<input id="booking-date" type="date" value={date} onChange={e => { setDate(e.target.value); setPage(1); }}/></label>
-      <label htmlFor="booking-market">ตลาด<select id="booking-market" aria-label="ตลาด" value={market} disabled={!refs.data} onChange={e => { setMarket(e.target.value); setPage(1); }}><option value="">ทุกตลาด</option>{refs.data?.items.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}</select></label>
-      <button className="text-link" onClick={() => { setStatus(""); setDate(""); setMarket(""); setPage(1); }}>ล้างตัวกรอง</button><button className="text-link" onClick={result.retry}>รีเฟรชรายการ</button>
+      {!holdsOnly && <label htmlFor="booking-status">สถานะ<select id="booking-status" aria-label="สถานะ" value={status} onChange={e => setStatus(e.target.value)}><option value="">ทุกสถานะ</option>{Object.entries(bookingStatusLabels).map(([key, label]) => <option value={key} key={key}>{label}</option>)}</select></label>}
+      <label htmlFor="booking-date">วันที่จอง<input id="booking-date" type="date" value={date} onChange={e => setDate(e.target.value)}/></label>
+      <label htmlFor="booking-market">ตลาด<select id="booking-market" aria-label="ตลาด" value={market} disabled={!refs.data} onChange={e => setMarket(e.target.value)}><option value="">ทุกตลาด</option>{refs.data?.items.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}</select></label>
+      <button className="text-link" onClick={() => update({ status: "all", date: null, market: null, page: null })}>ล้างตัวกรอง</button><button className="text-link" onClick={result.retry}>รีเฟรชรายการ</button>
     </div>
     {refs.error && <p className="form-alert" role="alert">{refs.error} <button className="text-link" onClick={refs.retry}>ลองโหลดตลาดใหม่</button></p>}
-    {result.loading && !result.data ? <p className="catalog-state" role="status">กำลังโหลดรายการ…</p> : result.error ? <p className="catalog-state" role="alert">{result.error} <button className="text-link" onClick={result.retry}>ลองโหลดอีกครั้ง</button></p> : result.data && <>
+    <DataWarning error={result.refreshError} retry={result.retry}/>
+    {result.loading && !result.data ? <p className="catalog-state" role="status">กำลังโหลดรายการ…</p> : result.initialError ? <p className="catalog-state" role="alert">{result.initialError} <button className="text-link" onClick={result.retry}>ลองโหลดอีกครั้ง</button></p> : result.data && <>
       <p className="admin-result-count" role="status">ทั้งหมด {result.data.total} รายการ{result.loading ? " • กำลังโหลด…" : ""}</p>
       {!result.data.items.length ? <p className="catalog-state">ยังไม่มีรายการที่ตรงกับตัวกรอง</p> : <div className="booking-grid">{result.data.items.map(booking => <article className="booking-card" key={booking.id}>
         <div className="booking-card-heading"><h3>{booking.stall.marketName} • {booking.stall.code}</h3><span className={"booking-status " + booking.status}>{bookingStatusLabels[booking.status]}</span></div>
@@ -102,7 +116,7 @@ export function BookingList({ manager = false, holdsOnly = false, defaultStatus 
         <BookingControl booking={booking} manager={manager} holdsOnly={holdsOnly} now={now} refresh={result.retry} onNotice={setNotice}/>{!manager && <Link className="text-link" href={"/bookings/" + booking.id}>ดูรายละเอียดรายการ</Link>}
         {manager && !holdsOnly && <PaymentPanel booking={booking} manager refresh={result.retry} onNotice={setNotice}/>}
       </article>)}</div>}
-      {(result.data.pages > 1 || page > 1) && <nav className="pagination" aria-label="หน้ารายการจอง"><button className="button button-white" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>ก่อนหน้า</button><span>หน้า {page} / {Math.max(1, result.data.pages)}</span><button className="button button-white" disabled={page >= result.data.pages} onClick={() => setPage(p => p + 1)}>ถัดไป</button></nav>}
+      {(result.data.pages > 1 || page > 1) && <nav className="pagination" aria-label="หน้ารายการจอง"><button className="button button-white" disabled={page <= 1} onClick={() => setPage(page - 1)}>ก่อนหน้า</button><span>หน้า {page} / {Math.max(1, result.data.pages)}</span><button className="button button-white" disabled={page >= result.data.pages} onClick={() => setPage(page + 1)}>ถัดไป</button></nav>}
     </>}
   </section>;
 }

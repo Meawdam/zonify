@@ -7,5 +7,5 @@ export default async function BookingPage({ params }: { params: Promise<{ id: st
   const [{ id }, user] = await Promise.all([params, currentUser()]);
   if (!/^[a-zA-Z0-9][a-zA-Z0-9-]{0,79}$/.test(id)) notFound();
   if (!user) redirect("/login?next=" + encodeURIComponent("/bookings/" + id));
-  return <AuthShell title="รายละเอียดการจอง" subtitle="ตรวจวันที่ ราคา และเวลาที่เหลือก่อนยืนยัน" user={user}><BookingDetail id={id}/></AuthShell>;
+  return <AuthShell title="รายละเอียดการจอง" subtitle="พักล็อก · ตรวจรายละเอียด · ชำระเงิน · รอตรวจสลิป · ยืนยันแล้ว" user={user}><BookingDetail key={id} id={id}/></AuthShell>;
 }

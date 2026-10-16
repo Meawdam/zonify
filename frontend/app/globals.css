@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+.booking-progress { display: flex; flex-wrap: wrap; gap: 12px 24px; padding: 16px 0; list-style: none; color: var(--muted); }
+.booking-progress [aria-current="step"] { color: var(--green); font-weight: 700; border-bottom: 2px solid var(--orange); }
+.button-green:hover:not(:disabled) { background: #285447; }
+.button-orange:hover:not(:disabled) { background: #9b3e25; }
+.button-white:hover:not(:disabled) { background: var(--sage); }
+textarea { font: inherit; color: inherit; }
+textarea:focus-visible, [tabindex="-1"]:focus-visible { outline: 3px solid var(--orange); outline-offset: 4px; }
+
 /* Reservations and time-limited holds. */
 .booking-action { margin-top: 24px; }
 .booking-action > .button { width: 100%; }
@@ -144,11 +152,11 @@ h1, h2, h3 { line-height: 1.25; letter-spacing: -.04em; font-weight: 750; }
 h2 { font-size: clamp(28px, 3vw, 40px); }
 .container { width: min(1240px, calc(100% - 80px)); max-width: 1240px; margin-inline: auto; }
 .icon { width: 20px; height: 20px; flex-shrink: 0; }
-.button { display: inline-flex; align-items: center; justify-content: center; gap: 16px; border: 0; border-radius: 9px; min-height: 52px; padding: 13px 26px; font-size: 15px; font-weight: 650; transition: background .2s, transform .2s; }
+.button { display: inline-flex; align-items: center; justify-content: center; gap: 16px; border: 0; border-radius: 8px; min-height: 52px; padding: 12px 24px; font-size: 15px; font-weight: 650; transition: background .2s, transform .2s; }
 .button:hover:not(:disabled) { transform: translateY(-2px); }
 .button-green { background: var(--green); color: white; }
 .button-orange { background: var(--orange); color: white; }
-.button-white { background: var(--cream); color: var(--green); }
+.button-white { background: var(--surface); color: var(--green); border: 1px solid var(--line); }
 .button:disabled { background: #e6dfd3; color: #777267; }
 .text-link { display: inline-flex; align-items: center; gap: 12px; border: 0; border-bottom: 1px solid currentColor; background: transparent; padding: 2px 0; font-size: 14px; font-weight: 550; }
 .text-link:hover { color: var(--orange); }

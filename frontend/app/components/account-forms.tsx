@@ -3,9 +3,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useRef, type FormEvent, type InputHTMLAttributes } from "react";
 import { api, ApiError, passwordError, roleLabels, type User, type FieldErrors } from "../lib/auth";
+import { fieldAccessibility } from "../lib/form-fields";
 function Field({ label, error, hint, ...props }: InputHTMLAttributes<HTMLInputElement> & { name: string; label: string; error?: string | undefined; hint?: string }) {
   return <div className="form-field"><label htmlFor={props.name}>{label}</label>
-    <input {...props} id={props.name} aria-invalid={!!error} aria-describedby={error ? `${props.name}-error` : hint ? `${props.name}-hint` : undefined}/>
+    <input {...props} id={props.name} {...fieldAccessibility(props.name, error, !!hint)}/>
     {hint && <small id={`${props.name}-hint`}>{hint}</small>}
     {error && <p className="field-error" id={`${props.name}-error`}>{error}</p>}
   </div>;

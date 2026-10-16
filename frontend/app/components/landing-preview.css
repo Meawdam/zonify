@@ -6,9 +6,6 @@
 .zonify-preview .container { width: min(1280px, calc(100% - 96px)); max-width: 1280px; }
 .zonify-preview h1, .zonify-preview h2, .zonify-preview h3 { letter-spacing: -.025em; }
 .zonify-preview h2 { font-size: clamp(28px, 3vw, 38px); font-weight: 650; line-height: 1.4; }
-.zonify-preview .button { min-height: 52px; border-radius: 8px; padding: 12px 26px; font-size: 15px; gap: 22px; }
-.zonify-preview .button-green { background: var(--green); color: var(--surface); }
-.zonify-preview .button-green:hover:not(:disabled) { background: #285447; }
 .zonify-preview .button:disabled { background: var(--unavailable); color: var(--unavailable-ink); }
 .zonify-preview .text-link { min-height: 44px; border: 0; text-decoration: underline; text-underline-offset: 7px; font-size: 14px; }
 .zonify-preview .text-link:hover { color: var(--orange); }
@@ -89,20 +86,7 @@
 .zonify-preview .legend { padding: 0; gap: 14px; font-size: 12px; }
 .zonify-preview .live-map .plan-canvas { background: #f3eedf url('/images/plan-landscape.svg') center / 100% 100%; border-radius: 8px; min-height: 420px; }
 .zonify-preview .live-map .map-scroll { margin: 36px 22px 22px 64px; padding: 6px; max-height: 480px; }
-.zonify-preview .live-map .slot { border-radius: 6px; min-height: 64px; box-shadow: none; gap: 4px; border-width: 1px; }
-.zonify-preview .live-map .slot strong { font-size: 14px; font-weight: 650; }
-.zonify-preview .live-map .slot small { font-size: 11px; }
-.zonify-preview .live-map .slot.available { background: var(--available); color: var(--available-ink); border-color: #9cb78f; }
-.zonify-preview .live-map .slot.booked { background: var(--booked); color: var(--booked-ink); border-color: #c9a991; }
-.zonify-preview .live-map .slot.held { background: var(--held); color: var(--held-ink); border-color: #c6a252; }
-.zonify-preview .live-map .slot.unavailable { background: var(--unavailable); color: var(--unavailable-ink); border-color: #b3bdb6; }
-.zonify-preview .live-map .slot:hover { transform: none; outline: 2px solid var(--green); outline-offset: 1px; }
-.zonify-preview .live-map .slot.selected { background: var(--green); color: var(--surface); border: 1px solid var(--surface); box-shadow: 0 0 0 3px var(--green); }
 .zonify-preview .live-map .walkway { font-size: 11px; color: var(--muted); padding-block: 8px; }
-.zonify-preview .available-dot { background: #83a574; }
-.zonify-preview .booked-dot { background: #ba947e; }
-.zonify-preview .held-dot { background: #d6b660; }
-.zonify-preview .unavailable-dot { background: #a8b2ab; }
 .zonify-preview .selection-panel { display: flex; flex-direction: column; padding: 28px; min-height: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
 .zonify-preview .selection-panel h3 { font-size: 26px; font-weight: 650; }
 .zonify-preview .selection-intro { font-size: 14px; line-height: 1.8; margin-top: 12px; }
@@ -250,4 +234,24 @@
 @media (prefers-reduced-motion: reduce) {
   .zonify-preview .button, .zonify-preview .market-card, .zonify-preview .market-image, .zonify-preview .slot { transition: none; }
   .zonify-preview .button:hover:not(:disabled) { transform: none; }
+}
+.floor-chooser { min-width: 0; }
+.floor-view-switch { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+.floor-view-switch [aria-pressed="true"] { color: var(--surface); background: var(--green); }
+.selection-summary { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; padding: 16px; padding-bottom: max(16px, env(safe-area-inset-bottom)); border: 1px solid var(--line); border-radius: 8px; background: var(--sage); margin-block: 0 12px; overflow-wrap: anywhere; }
+.selection-summary strong { font-variant-numeric: tabular-nums; }
+.selection-summary a { min-height: 44px; }
+.selection-panel { scroll-margin-block: 24px; }
+.stall-list-filters { display: flex; flex-wrap: wrap; gap: 12px; padding-block: 12px; }
+.stall-list-filters label { display: grid; gap: 8px; flex: 1; min-width: 140px; }
+.stall-list-filters :is(input, select) { width: 100%; min-height: 44px; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.stall-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); list-style: none; gap: 12px; margin: 0; padding: 8px; max-height: 480px; overflow: auto; }
+.stall-list-item { display: grid; width: 100%; min-height: 90px; gap: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); text-align: start; padding: 12px; }
+.stall-list-item[aria-pressed="true"] { outline: 3px solid var(--green); background: var(--sage); }
+@media (max-width: 800px) {
+  .zonify-preview .floor-chooser .live-map .plan-canvas { min-height: 0; }
+  .zonify-preview .floor-chooser .live-map .map-scroll { max-height: 36svh; }
+  .stall-list { grid-template-columns: 1fr; max-height: 36svh; }
+  .selection-summary { align-items: start; }
+  .selection-summary a { flex-basis: 100%; }
 }

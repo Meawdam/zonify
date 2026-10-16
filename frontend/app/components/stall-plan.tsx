@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Icon } from "./icons";
 import { statusLabels, type FloorPlan } from "../lib/catalog";
+import "./stall-plan.css";
 export function StallPlan({ plan, selected, onSelect }: { plan: FloorPlan; selected: string | null; onSelect: (id: string) => void }) {
   const [zoom, setZoom] = useState(100);
   const rows = Array.from({ length: Math.max(-1, ...plan.stalls.map(s => s.rowOrder)) + 1 }, (_, i) => i);

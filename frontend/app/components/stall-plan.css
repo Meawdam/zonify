@@ -1,0 +1,14 @@
+.live-map { min-width: 0; }
+.live-map .slot { min-height: 64px; border-radius: 6px; box-shadow: none; gap: 4px; border-width: 1px; }
+.live-map .slot strong { font-size: 14px; font-weight: 650; }
+.live-map .slot small { font-size: 11px; }
+.live-map .slot.available { background: var(--available); color: var(--available-ink); border-color: #9cb78f; }
+.live-map .slot.booked { background: var(--booked); color: var(--booked-ink); border-color: #c9a991; }
+.live-map .slot.held { background: var(--held); color: var(--held-ink); border-color: #c6a252; }
+.live-map .slot.unavailable { background: var(--unavailable); color: var(--unavailable-ink); border-color: #b3bdb6; }
+.live-map .slot:hover { transform: none; outline: 2px solid var(--green); outline-offset: 1px; }
+.live-map .slot.selected, .live-map .slot.available.selected { background: var(--green); color: var(--surface); border: 1px solid var(--surface); box-shadow: 0 0 0 3px var(--green); }
+.available-dot { background: #83a574; }
+.booked-dot { background: #ba947e; }
+.held-dot { background: #d6b660; }
+.unavailable-dot { background: #a8b2ab; }

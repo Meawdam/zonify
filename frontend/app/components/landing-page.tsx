@@ -9,13 +9,14 @@ import { InfoDialog, type DialogMode } from "./info-dialog";
 
 import { AccountMenu } from "./account-menu";
 import type { User } from "../lib/auth";
+import type { LandingData } from "../lib/server-catalog";
 import "./landing-preview.css";
 
 function Brand() {
   return <a href="#" className="brand" aria-label="Zonify หน้าแรก"><Icon name="store"/><span>Zonify</span></a>;
 }
 
-export function LandingPage({ user, initialDate, initialMarket, initialStall }: { user: User | null; initialDate: string; initialMarket: string; initialStall: string }) {
+export function LandingPage({ user, initialDate, initialMarket, initialStall, initialData }: { user: User | null; initialDate: string; initialMarket: string; initialStall: string; initialData?: LandingData }) {
   const [dialog, setDialog] = useState<DialogMode | null>(null);
   const [menu, setMenu] = useState(false);
   const closeDialog = useCallback(() => setDialog(null), []);
@@ -39,7 +40,7 @@ export function LandingPage({ user, initialDate, initialMarket, initialStall }: 
       <div id="how-it-works" className="container steps" aria-label="ขั้นตอนการสำรวจตลาด">
         {[{ title: "เลือกตลาด", copy: "ค้นหาตลาดที่ตรงกับสไตล์ของคุณ", icon: "pin" as const }, { title: "ดูล็อกบนผัง", copy: "ดูตำแหน่ง ขนาด ราคา และสถานะ", icon: "grid" as const }, { title: "ค้นหาร้านค้า", copy: "ดูร้านที่สนใจและตำแหน่งบนผัง", icon: "store" as const }].map((step, index) => <div className="step" key={step.title}><div className="step-mark"><span className="step-number">0{index + 1}</span><span className="step-icon"><Icon name={step.icon}/></span></div><div><h2>{step.title}</h2><p>{step.copy}</p></div></div>)}
       </div></section>
-      <MarketExplorer initialDate={initialDate} initialMarket={initialMarket} initialStall={initialStall} loggedIn={!!user}/>
+      <MarketExplorer initialDate={initialDate} initialMarket={initialMarket} initialStall={initialStall} initialData={initialData} loggedIn={!!user}/>
       <Advertisements/>
       <section className="cta-section"><div className="container cta-inner"><div><h2>เริ่มร้านเล็ก ๆ ในตลาดที่ใช่</h2><p>พื้นที่ดี ๆ รอให้เรื่องราวของคุณเริ่มต้น</p></div><a className="button button-white" href="#markets">เลือกตลาดของคุณ <Icon/></a></div></section>
     </main>

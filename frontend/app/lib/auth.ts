@@ -12,6 +12,10 @@ export async function api<T>(path: string, options: { method?: string; body?: un
       ...(options.body === undefined ? {} : { headers: { "Content-Type": "application/json" }, body: JSON.stringify(options.body) }),
     });
   } catch { throw new ApiError(0, "NETWORK_ERROR", "เชื่อมต่อระบบไม่ได้ กรุณาลองใหม่"); }
+  if (response.ok && ["/login", "/logout", "/me/password"].includes(path) && options.method && options.method !== "GET" && typeof window !== "undefined") {
+    window.dispatchEvent(new Event("zonify-session"));
+    if (typeof BroadcastChannel !== "undefined") { const channel = new BroadcastChannel("zonify-session"); channel.postMessage("changed"); channel.close(); }
+  }
   if (response.status === 204) return undefined as T;
   const data = await response.json().catch(() => null);
   if (!response.ok) {

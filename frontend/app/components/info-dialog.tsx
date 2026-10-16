@@ -27,7 +27,8 @@ export function InfoDialog({ mode, onClose }: { mode: DialogMode; onClose: () =>
       <span className="dialog-icon"><Icon name="grid"/></span>
       <h2 id="dialog-title">{mode === "owner" ? "สำหรับเจ้าของตลาด" : "สำรวจตลาดของคุณ"}</h2>
       <p className="dialog-subtitle">ดูผังพื้นที่ สถานะล็อก และค้นหาร้านค้าได้จากหน้าเว็บ</p>
-      <p className="demo-notice">หน้าจัดการตลาดและระบบจองอยู่ระหว่างพัฒนา การเลือกล็อกในขณะนี้เป็นการดูข้อมูลเท่านั้น</p>
+      <p className="demo-notice">{mode === "owner" ? "ผู้จัดการและเจ้าของเข้าสู่ระบบเพื่อจัดการตลาด ผังล็อก ร้านค้า รายการจอง และตรวจสลิปได้จากเมนูจัดการตลาด" : "เลือกตลาดและวันที่ → พักล็อก 10 นาที → ตรวจรายละเอียด → ดำเนินการชำระเงินและส่งสลิปภายใน 30 นาที → รอตรวจสลิป → ยืนยันแล้ว"}</p>
+      <p className="form-description">การส่งสลิปยังไม่ถือว่าจองสำเร็จ ต้องรอผู้จัดการตรวจรับเงินและสถานะยืนยันแล้ว</p>
       <button className="button button-green" onClick={onClose}>กลับไปสำรวจตลาด <Icon/></button>
     </section>
   </div>;

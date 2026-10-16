@@ -32,13 +32,6 @@
 .zonify-secondary :is(.account-card,.booking-card,.shop-detail,.admin-editor,.admin-floor-selection,.report-trend,.catalog-state,.admin-table-scroll) { border: 1px solid var(--line); border-radius: 12px; box-shadow: none; background: var(--surface); }
 .zonify-secondary .account-card { max-width: none; padding: 32px; }
 .zonify-secondary .account-card h2 { font-size: 26px; margin-bottom: 24px; }
-.zonify-secondary .button { border-radius: 8px; min-height: 52px; padding: 12px 24px; font-size: 15px; white-space: normal; }
-.zonify-secondary .button-green { background: var(--green); color: var(--surface); }
-.zonify-secondary .button-orange { background: var(--orange); color: var(--surface); }
-.zonify-secondary .button-green:hover:not(:disabled) { background: #285447; }
-.zonify-secondary .button-orange:hover:not(:disabled) { background: #9b3e25; }
-.zonify-secondary .button-white { background: var(--surface); color: var(--green); border: 1px solid var(--line); }
-.zonify-secondary .button-white:hover:not(:disabled) { background: var(--sage); }
 .zonify-secondary .button:disabled { background: var(--unavailable); color: var(--unavailable-ink); }
 .zonify-secondary .text-link { min-height: 44px; border: 0; text-decoration: underline; text-underline-offset: 6px; font-size: 14px; }
 .zonify-secondary .text-link:hover { color: var(--orange); }
@@ -100,18 +93,6 @@
 .zonify-secondary .legend { font-size: 12px; padding: 0; gap: 12px; }
 .zonify-secondary .live-map .plan-canvas { background: #f3eedf url('/images/plan-landscape.svg') center / 100% 100%; min-height: 420px; }
 .zonify-secondary .live-map .map-scroll { margin: 36px 22px 22px 64px; max-height: 480px; }
-.zonify-secondary .live-map .slot { min-height: 64px; border-radius: 6px; box-shadow: none; }
-.zonify-secondary .live-map .slot small { font-size: 11px; }
-.zonify-secondary .live-map .slot.available { background: var(--available); color: var(--available-ink); border-color: #9cb78f; }
-.zonify-secondary .live-map .slot.booked { background: var(--booked); color: var(--booked-ink); border-color: #c9a991; }
-.zonify-secondary .live-map .slot.held { background: var(--held); color: var(--held-ink); border-color: #c6a252; }
-.zonify-secondary .live-map .slot.unavailable { background: var(--unavailable); color: var(--unavailable-ink); border-color: #b3bdb6; }
-.zonify-secondary .live-map .slot.selected { background: var(--green); color: var(--surface); border-color: var(--surface); box-shadow: 0 0 0 3px var(--green); }
-.zonify-secondary .live-map .slot:hover { transform: none; outline: 2px solid var(--green); outline-offset: 1px; }
-.zonify-secondary .available-dot { background: #83a574; }
-.zonify-secondary .booked-dot { background: #ba947e; }
-.zonify-secondary .held-dot { background: #d6b660; }
-.zonify-secondary .unavailable-dot { background: #a8b2ab; }
 .zonify-secondary .booking-grid { gap: 24px; }
 .zonify-secondary .booking-card { padding: 28px; }
 .zonify-secondary .booking-card-heading { align-items: flex-start; gap: 16px; flex-wrap: wrap; }

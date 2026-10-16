@@ -4,6 +4,7 @@ import { usePublicData } from "../lib/use-public-data";
 import { baht } from "../lib/catalog";
 import { bookingStatusLabels, type BookingStatus } from "../lib/bookings";
 import type { AdminRow } from "../lib/admin";
+import { DataWarning } from "./data-warning";
 type DashboardData = { date: string; markets: number; shops: number; availability: Record<string, number>; bookings: Partial<Record<BookingStatus, number>>;
   payments: { received: number; refunded: number; net: number }; pendingRefunds: { count: number; amount: number }; perMarket: { id: string; name: string; available: number; held: number; booked: number; unavailable: number }[] };
 type BookingReport = { basis: "booking_date"; total: number; rows: { period: string; marketId: string; marketName: string; status: BookingStatus; count: number; bookingAmount: number }[] };
@@ -21,7 +22,8 @@ export function Dashboard({ today, markets }: { today: string; markets: AdminRow
   const result = usePublicData<DashboardData>("/api/admin/dashboard?" + query, 20_000, true);
   return <section className="report-workspace"><div className="admin-section-heading"><div><h2>ภาพรวมตลาด</h2><p>สถานะล็อกและการจองตามวันที่เลือก • อัปเดตทุก 20 วินาที</p></div></div>
     <div className="admin-filters"><label>วันที่ภาพรวม<input aria-label="วันที่ภาพรวม" type="date" value={date} required onChange={e => { if (e.target.value) setDate(e.target.value); }}/></label><MarketSelect markets={markets} value={market} onChange={setMarket}/><button className="text-link" onClick={result.retry}>โหลดภาพรวมใหม่</button></div>
-    {result.loading && !result.data ? <p className="catalog-state" role="status">กำลังโหลดภาพรวม…</p> : result.error ? <p className="catalog-state" role="alert">{result.error} <button className="text-link" onClick={result.retry}>ลองใหม่</button></p> : result.data && <>
+    <DataWarning error={result.refreshError} retry={result.retry}/>
+    {result.loading && !result.data ? <p className="catalog-state" role="status">กำลังโหลดภาพรวม…</p> : result.initialError ? <p className="catalog-state" role="alert">{result.initialError} <button className="text-link" onClick={result.retry}>ลองใหม่</button></p> : result.data && <>
       <Cards items={[{ label: "ตลาดที่เปิดแสดง", value: result.data.markets }, { label: "ร้านที่ค้นหาได้", value: result.data.shops }, { label: "ล็อกว่าง", value: result.data.availability.available ?? 0 }, { label: "ล็อกจองแล้ว", value: result.data.availability.booked ?? 0 }]}/>
       <Cards items={[{ label: "พักล็อกอยู่", value: result.data.bookings.held ?? 0 }, { label: "รอชำระเงิน", value: result.data.bookings.pending_payment ?? 0 }, { label: "รอตรวจสลิป", value: result.data.bookings.payment_review ?? 0 }, { label: "ยืนยันการจองแล้ว", value: result.data.bookings.confirmed ?? 0 }]}/>
       <h3>ยอดตามวันที่บันทึกรับหรือคืนเงิน</h3><p className="form-description">ใช้วันที่ผู้จัดการตรวจรับและบันทึกคืนเงิน ตามเวลาไทย ยอดการจองยังไม่ชำระไม่รวมในรายรับ</p>

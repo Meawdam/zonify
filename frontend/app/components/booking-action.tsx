@@ -24,7 +24,7 @@ export function BookingAction({ stall, marketId, date, loggedIn, refresh }: { st
   return <div className="booking-action">
     {error && <p className="form-alert" role="alert">{error}</p>}
     {!loggedIn && stall.status === "available" ? <Link className="button button-orange" href={"/login?next=" + encodeURIComponent(back)}>เข้าสู่ระบบเพื่อพักล็อก</Link> : <button className="button button-orange" disabled={!loggedIn || busy || stall.status !== "available"} onClick={hold}>{busy ? "กำลังพักล็อก…" : stall.status === "available" ? "พักล็อกนี้ 10 นาที" : "ล็อกนี้ไม่ว่าง"}</button>}
-    <p className="catalog-note">พักล็อกครั้งละหนึ่งล็อกต่อวัน แล้วตรวจรายละเอียดและยืนยันการจอง ราคาจะยึดตามเวลาที่พักล็อก</p>
+    <p className="catalog-note">พักล็อกครั้งละหนึ่งล็อกต่อวัน แล้วตรวจรายละเอียดและดำเนินการชำระเงิน ราคายึดตามเวลาที่พักล็อก การจองสำเร็จเมื่อผู้จัดการตรวจรับเงินแล้ว</p>
     <Link className="text-link" href="/bookings">ดูรายการจองของฉัน</Link>
   </div>;
 }
