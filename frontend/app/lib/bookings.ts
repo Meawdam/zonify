@@ -5,6 +5,7 @@ export type PaymentAttempt = { id: string; amount: number; transferredAt: string
   status: "review" | "approved" | "rejected"; reviewedAt: string | null; reviewReason: string; verifiedReference: string; slipUrl: string };
 export type Booking = {
   id: string; date: string; status: BookingStatus; price: number; createdAt: string; updatedAt: string;
+  shop?: { id: string; name: string; categoryId: string; phone: string; contactUrl: string } | null;
   expiresAt: string | null; cancelledAt: string | null; cancelReason: string;
   customer: User; stall: { id: string; marketId: string; code: string; width: number; depth: number; marketName: string; zoneName: string };
   payment: { recipient: { id: string; name: string } | null; paidAt: string | null; approvedReference: string | null;
@@ -32,7 +33,7 @@ export function safeLoginNext(value: string | undefined) {
   if (!value) return "/";
   try {
     const url = new URL(value, "http://zonify.local");
-    if (url.origin !== "http://zonify.local" || !(url.pathname === "/" || /^\/bookings(?:\/[a-zA-Z0-9-]+)?$/.test(url.pathname))) return "/";
+    if (url.origin !== "http://zonify.local" || !(url.pathname === "/" || url.pathname === "/merchant" || /^\/bookings(?:\/[a-zA-Z0-9-]+)?$/.test(url.pathname))) return "/";
     return url.pathname + url.search + url.hash;
   } catch { return "/"; }
 }

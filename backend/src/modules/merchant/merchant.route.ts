@@ -1,0 +1,16 @@
+import { Router } from "express";
+import { authMiddleware, type AuthRequest } from "../../middlewares/auth.middleware.js";
+import { slug } from "../catalog/catalog.service.js";
+import { createShopDto, updateShopDto } from "./merchant.dto.js";
+import { createShop, updateShop, listOwnedShops, getOwnedShop, merchantOverview } from "./merchant.service.js";
+import { shopPhotoUploadRouter } from "./merchant-photo.js";
+const router = Router();
+router.use(authMiddleware);
+router.use((_req, res, next) => { res.set("Cache-Control", "private, no-store"); next(); });
+router.use(shopPhotoUploadRouter);
+router.get("/overview", async (req: AuthRequest, res) => res.json(await merchantOverview(req.user!.id)));
+router.get("/shops", async (req: AuthRequest, res) => res.json(await listOwnedShops(req.user!.id)));
+router.post("/shops", async (req: AuthRequest, res) => res.status(201).json(await createShop(req.user!.id, createShopDto.parse(req.body))));
+router.get("/shops/:id", async (req: AuthRequest, res) => res.json(await getOwnedShop(slug.parse(req.params.id), req.user!.id)));
+router.patch("/shops/:id", async (req: AuthRequest, res) => res.json(await updateShop(slug.parse(req.params.id), req.user!.id, updateShopDto.parse(req.body))));
+export default router;

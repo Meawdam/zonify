@@ -21,6 +21,8 @@ before(async () => {
   await db.collection("bookings").insertOne({ _id: "booking", stallId: "stall", date: "2026-10-11", status: "confirmed", price: 125.25, payment: { paidAt: new Date(), attempts: [{ slipId: "private-slip" }] } });
   await db.collection("bookings").createIndex({ stallId: 1, date: 1 }, { unique: true, partialFilterExpression: { status: { $in: ["held", "confirmed"] } } });
   await db.collection("paymentslips").insertOne({ _id: "private-slip", bookingId: "booking", data: new mongoose.mongo.Binary(Buffer.from([0, 255, 10, 0, 200])), contentType: "image/jpeg" });
+  await db.collection("shopphotos").insertOne({ _id: "shop-photo", shopId: "shop", data: new mongoose.mongo.Binary(Buffer.from([255, 216, 255, 3, 2, 1])) });
+  await db.collection("shops").insertOne({ _id: "shop", ownerId: "merchant", photoId: "shop-photo", phone: "0812345678" });
   await db.collection("sessions").insertOne({ _id: "must-not-restore", expiresAt: new Date(Date.now() + 3600000) });
 });
 after(async () => { await client?.close(); await mongo?.stop(); });
@@ -35,7 +37,7 @@ test("real mongodump/restore retains dates IDs hashes private bytes prices and u
   const path = join(folder, "round-trip"); await backupDatabase(path, true);
   const result = await restoreDatabase(path, "zonify_restore_round_trip", true); assert.equal(result.sessionsRestored, 0);
   const restored = client.db(result.database), source = client.db();
-  for (const name of ["users", "bookings", "paymentslips"]) assert.deepEqual(await restored.collection(name).find().toArray(), await source.collection(name).find().toArray());
+  for (const name of ["users", "bookings", "paymentslips", "shops", "shopphotos"]) assert.deepEqual(await restored.collection(name).find().toArray(), await source.collection(name).find().toArray());
   assert.equal(await restored.collection("sessions").countDocuments(), 0);
   await assert.rejects(restored.collection("users").insertOne({ email: "backup@qa.test" }), (e: unknown) => (e as { code: number }).code === 11000);
   await assert.rejects(restored.collection("bookings").insertOne({ _id: "duplicate", stallId: "stall", date: "2026-10-11", status: "held" }), (e: unknown) => (e as { code: number }).code === 11000);

@@ -82,7 +82,7 @@ test("pagination has stable non-overlapping pages and accurate totals", async ()
 });
 test("shop details expose verified location without internal fields", async () => {
   const shop = await get("/shops/canal-coffee"); assert.equal(shop.status, 200); assert.equal(shop.data.stall.id, "canal-A03");
-  assert.deepEqual(Object.keys(shop.data).sort(), ["category", "description", "hours", "id", "market", "name", "stall"]);
+  assert.deepEqual(Object.keys(shop.data).sort(), ["category", "contactUrl", "description", "hours", "id", "locationDate", "locationSource", "locations", "market", "name", "phone", "photoUrl", "stall"]);
   assert.equal((await get("/shops/missing-shop")).status, 404);
   await ShopModel.updateOne({ _id: "canal-coffee" }, { $set: { stallId: "community-A01" } });
   assert.equal((await get("/shops/canal-coffee")).data.stall, null);

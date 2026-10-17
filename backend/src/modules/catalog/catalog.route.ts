@@ -11,5 +11,5 @@ router.get("/markets/:id/floor-plan", async (req, res) => {
   res.json(await floorPlan(id, query.date ?? bangkokDate()));
 });
 router.get("/shops", async (req, res) => { res.json(await listShops(shopQuery.parse(req.query))); });
-router.get("/shops/:id", async (req, res) => { res.json(await getShop(slug.parse(req.params.id))); });
+router.get("/shops/:id", async (req, res) => { const query = z.object({ date: dateQuery.optional() }).strict().parse(req.query); res.json(await getShop(slug.parse(req.params.id), query.date)); });
 export default router;

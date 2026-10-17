@@ -6,6 +6,8 @@ const body = (schema: object) => ({ required: true, content: json(schema) });
 const reason = { type: "object", required: ["reason"], additionalProperties: false, properties: { reason: { type: "string", minLength: 1, maxLength: 500, description: "Trimmed, non-blank cancellation/release reason" } } };
 const id = [{ name: "id", in: "path", required: true, schema: { type: "string" } }];
 const filter = [
+  { name: "shop", in: "query", schema: { type: "string" } },
+  { name: "group", in: "query", schema: { type: "string", enum: ["current", "history", "action"] } },
   { name: "status", in: "query", schema: { type: "string", enum: [...bookingStatuses] } },
   { name: "date", in: "query", schema: { type: "string", format: "date" } },
   { name: "market", in: "query", schema: { type: "string" } },
@@ -19,13 +21,14 @@ export const bookingSchemas = {
     id: { type: "string" }, date: { type: "string", format: "date" }, status: { type: "string", enum: [...bookingStatuses] }, price: { type: "number", minimum: 0, description: "Daily price snapshot at hold creation, never supplied by client" },
     createdAt: { type: "string", format: "date-time" }, updatedAt: { type: "string", format: "date-time" }, expiresAt: { type: "string", format: "date-time", nullable: true }, cancelledAt: { type: "string", format: "date-time", nullable: true }, cancelReason: { type: "string" },
     customer: { $ref: "#/components/schemas/User" },
+    shop: { type: "object", nullable: true, description: "Immutable shop snapshot; null for legacy bookings", properties: { id: { type: "string" }, name: { type: "string" }, categoryId: { type: "string" }, phone: { type: "string" }, contactUrl: { type: "string" } } },
     payment: { $ref: "#/components/schemas/BookingPayment" },
     stall: { type: "object", properties: { id: { type: "string" }, marketId: { type: "string" }, code: { type: "string" }, width: { type: "number" }, depth: { type: "number" }, marketName: { type: "string" }, zoneName: { type: "string" } } },
   } },
 };
 export const bookingPaths = {
   "/api/bookings/holds": { post: { summary: "Hold exactly one stall for one day for 10 minutes", description: "Dates from today through 365 days in Asia/Bangkok. Unique active stall/day claim prevents concurrent double booking. A same-user retry returns the same hold without changing expiry or price. Expired history is retained.", security,
-    requestBody: body({ type: "object", required: ["stallId", "date"], additionalProperties: false, properties: { stallId: { type: "string" }, date: { type: "string", format: "date" } } }),
+    requestBody: body({ type: "object", required: ["stallId", "date", "shopId"], additionalProperties: false, properties: { shopId: { type: "string", description: "Active owned shop in the same market; retries must use the same shop" }, stallId: { type: "string" }, date: { type: "string", format: "date" } } }),
     responses: { 201: { description: "Hold acquired or same-owner active hold returned", content: json(ref) }, ...errors } } },
   "/api/bookings/me": { get: { summary: "Own booking/hold history only", security, parameters: filter, responses: { 200: { description: "Paginated own records", content: json(list) }, ...errors } } },
   "/api/bookings/{id}": { get: { summary: "Read own reservation", security, parameters: id, responses: result } },

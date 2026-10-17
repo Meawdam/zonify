@@ -9,6 +9,7 @@ const user = { type: "object", required: ["id", "name", "email", "phone", "role"
   role: { type: "string", enum: ["customer", "manager", "owner"] },
 } };
 const error = { type: "object", properties: { code: string, message: string, errors: { type: "array", items: { type: "object", properties: { path: { type: "array", items: string }, message: string } } } } };
+import { merchantPaths } from "../modules/merchant/merchant.openapi.js";
 const json = (schema: object) => ({ "application/json": { schema } });
 const body = (properties: Record<string, object>, required = Object.keys(properties)) => ({
   required: true, content: json({ type: "object", additionalProperties: false, required, properties }),
@@ -27,6 +28,7 @@ export const swaggerSpec = {
   servers: [{ url: "/" }],
   components: { schemas: { User: user, Error: error, ...catalogSchemas, ...bookingSchemas, ...paymentSchemas }, securitySchemes: { cookieAuth: { type: "apiKey", in: "cookie", name: "zonify_session" } } },
   paths: {
+    ...merchantPaths,
     ...catalogPaths,
     ...adminPaths,
     ...bookingPaths,

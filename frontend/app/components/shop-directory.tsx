@@ -1,8 +1,10 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { type FormEvent } from "react";
 import { usePublicData } from "../lib/use-public-data";
 import type { Category, Market, ShopResults } from "../lib/catalog";
+import { validDate } from "../lib/catalog";
 import { Icon } from "./icons";
 import { useURLState } from "../lib/use-url-state";
 import { shopFilters } from "../lib/url-state";
@@ -14,10 +16,12 @@ export function ShopDirectory({ markets, initialCategories }: { markets: Market[
   if (markets.length && !markets.some(m => m.id === filters.market)) filters.market = "";
   if (categories.data && !categories.data.items.some(c => c.id === filters.category)) filters.category = "";
   const returnTo = "/?" + params.toString() + "#shops";
+  const date = validDate(params.get("date") ?? "") ? params.get("date")! : "";
   const query = new URLSearchParams({ page: String(filters.page), limit: "6" });
   if (filters.q) query.set("q", filters.q);
   if (filters.market) query.set("market", filters.market);
   if (filters.category) query.set("category", filters.category);
+  if (date) query.set("date", date);
   const shops = usePublicData<ShopResults>("/api/shops?" + query);
   function search(event: FormEvent<HTMLFormElement>) { event.preventDefault(); update({ q: String(new FormData(event.currentTarget).get("q") ?? "").trim().slice(0, 100), page: null }, "shops"); }
   function clear() { update({ q: null, shopMarket: null, category: null, page: null }, "shops"); }
@@ -34,10 +38,12 @@ export function ShopDirectory({ markets, initialCategories }: { markets: Market[
       {shops.loading ? <p className="catalog-state" role="status">กำลังค้นหาร้านค้า…</p> : shops.error ? <div className="catalog-state" role="alert">โหลดร้านค้าไม่ได้ <button className="text-link" onClick={shops.retry}>ลองโหลดร้านค้าอีกครั้ง</button></div> : shops.data ? <>
         <div className="result-count"><p>พบ {shops.data.total} ร้าน{filters.q ? ` สำหรับ “${filters.q}”` : ""}</p><button className="text-link" onClick={clear}>ล้างตัวกรอง</button></div>
         {shops.data.items.length ? <div className="shop-grid">{shops.data.items.map(shop => <article className="shop-card" key={shop.id}>
+          {shop.photoUrl && <Image unoptimized src={shop.photoUrl} width={400} height={220} style={{ width: "100%", height: 180, objectFit: "cover", borderRadius: 12 }} alt={shop.name}/>}
           <span className="shop-category"><Icon name="store"/>{shop.category.name}</span>
-          <h3><Link href={{ pathname: `/shops/${shop.id}`, query: { returnTo } }}>{shop.name}</Link></h3><p>{shop.description}</p>
+          <h3><Link href={{ pathname: `/shops/${shop.id}`, query: { returnTo, ...(date ? { date } : {}) } }}>{shop.name}</Link></h3><p>{shop.description}</p>
           <div className="shop-position"><Icon name="pin"/><span>{shop.market.name}{shop.stall ? ` · ล็อก ${shop.stall.code}` : ""}</span></div>
-          <Link href={{ pathname: `/shops/${shop.id}`, query: { returnTo } }} className="text-link" aria-label={`ดูรายละเอียด ${shop.name}`}>ดูร้านค้า <Icon/></Link>
+          {shop.locationSource === "reservation" && <p>ตำแหน่งวันที่ {shop.locationDate}</p>}
+          <Link href={{ pathname: `/shops/${shop.id}`, query: { returnTo, ...(date ? { date } : {}) } }} className="text-link" aria-label={`ดูรายละเอียด ${shop.name}`}>ดูร้านค้า <Icon/></Link>
         </article>)}</div> : <div className="catalog-state">ไม่พบร้านค้าที่ตรงกับการค้นหา ลองเปลี่ยนคำค้นหรือล้างตัวกรอง</div>}
         {shops.data.pages > 1 && <nav className="pagination" aria-label="หน้ารายชื่อร้านค้า">
           <button className="button button-white" disabled={filters.page <= 1} onClick={() => update({ page: filters.page - 1 }, "shops")}>ก่อนหน้า</button>

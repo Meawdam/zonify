@@ -33,6 +33,9 @@ const stateSchema = new Schema({
 stateSchema.index({ stallId: 1, date: 1 }, { unique: true });
 const shopSchema = new Schema({
   _id: id, marketId: { ...text, index: true }, categoryId: { ...text, index: true },
+  ownerId: { type: String, default: null, index: true },
+  photoId: { type: String, default: null },
+  phone: { type: String, default: "" }, contactUrl: { type: String, default: "" },
   stallId: { type: String, default: null },
   name: text, description: { type: String, trim: true, default: "" }, hours: { type: String, default: "" },
   active: { type: Boolean, default: true },

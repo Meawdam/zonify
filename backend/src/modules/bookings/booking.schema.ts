@@ -4,6 +4,8 @@ export const bookingStatuses = [...activeBookingStatuses, "cancelled", "expired"
 const bookingSchema = new Schema({
   _id: { type: String, required: true },
   userId: { type: String, required: true, index: true },
+  shopId: { type: String, default: null, index: true },
+  shopSnapshot: { type: new Schema({ id: String, name: String, categoryId: String, phone: String, contactUrl: String }, { _id: false }), default: null },
   userSnapshot: { id: String, name: String, email: String, phone: String, role: String },
   marketId: { type: String, required: true, index: true },
   stallId: { type: String, required: true },

@@ -11,6 +11,7 @@ export const dateQuery = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(value =>
 }, "วันที่ไม่ถูกต้อง");
 export const slug = z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9-]{0,79}$/);
 export const shopQuery = z.object({
+  date: dateQuery.optional(),
   q: z.string().trim().max(100).default(""),
   market: slug.optional(), category: slug.optional(),
   page: z.coerce.number().int().min(1).max(10000).default(1),
@@ -74,8 +75,9 @@ async function directoryRefs() {
   ]);
   return { markets: new Map(markets.map(m => [m._id, m])), categories: new Map(categories.map(c => [c._id, c])) };
 }
-type ShopRow = { _id: string; marketId: string; categoryId: string; stallId?: string | null; name: string; description: string; hours: string };
-async function presentShops(shops: ShopRow[], refs: Awaited<ReturnType<typeof directoryRefs>>) {
+type ShopRow = { _id: string; marketId: string; categoryId: string; stallId?: string | null; ownerId?: string | null; photoId?: string | null; phone?: string; contactUrl?: string; name: string; description: string; hours: string };
+async function presentShops(shops: ShopRow[], refs: Awaited<ReturnType<typeof directoryRefs>>, date = bangkokDate()) {
+  const reservations = await BookingModel.find({ shopId: { $in: shops.filter(s => s.ownerId).map(s => s._id) }, date, status: "confirmed" }).sort({ stallId: 1 }).lean();
   const stalls = await StallModel.find({ _id: { $in: shops.flatMap(s => s.stallId ? [s.stallId] : []) } }).lean();
   const byId = new Map(stalls.map(s => [s._id, s]));
   return shops.map(s => {
@@ -83,9 +85,12 @@ async function presentShops(shops: ShopRow[], refs: Awaited<ReturnType<typeof di
     const category = refs.categories.get(s.categoryId)!;
     const position = s.stallId ? byId.get(s.stallId) : null;
     const stall = position?.marketId === s.marketId ? { id: position._id, code: position.code } : null;
+    const locations = s.ownerId ? reservations.filter(b => b.shopId === s._id && b.marketId === s.marketId).map(b => ({ id: b.stallId, code: b.stallSnapshot?.code ?? "" })) : stall ? [stall] : [];
     return { id: s._id, name: s.name, description: s.description, hours: s.hours,
+      phone: s.phone ?? "", contactUrl: s.contactUrl ?? "", photoUrl: s.photoId ? `/api/shops/${s._id}/photo?v=${s.photoId}` : null,
+      locations, locationDate: date, locationSource: s.ownerId ? "reservation" : "catalog",
       market: { id: market._id, name: market.name, location: market.location },
-      category: { id: category._id, name: category.name }, stall };
+      category: { id: category._id, name: category.name }, stall: locations[0] ?? null };
   });
 }
 export async function listShops(query: z.infer<typeof shopQuery>) {
@@ -100,10 +105,10 @@ export async function listShops(query: z.infer<typeof shopQuery>) {
     ShopModel.find(filter).sort({ name: 1, _id: 1 }).skip((query.page - 1) * query.limit).limit(query.limit).lean(),
     ShopModel.countDocuments(filter),
   ]);
-  return { items: await presentShops(shops, refs), total, page: query.page, limit: query.limit, pages: Math.ceil(total / query.limit) };
+  return { items: await presentShops(shops, refs, query.date), total, page: query.page, limit: query.limit, pages: Math.ceil(total / query.limit) };
 }
-export async function getShop(id: string) {
+export async function getShop(id: string, date = bangkokDate()) {
   const [shop, refs] = await Promise.all([ShopModel.findOne({ _id: id, active: true }).lean(), directoryRefs()]);
   if (!shop || !refs.markets.has(shop.marketId) || !refs.categories.has(shop.categoryId)) throw new HttpError(404, "SHOP_NOT_FOUND", "ไม่พบร้านค้านี้");
-  return (await presentShops([shop], refs))[0]!;
+  return (await presentShops([shop], refs, date))[0]!;
 }

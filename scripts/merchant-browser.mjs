@@ -1,0 +1,62 @@
+// Real local API QA. Set QA_PLAYWRIGHT_MODULE to an installed Playwright entrypoint.
+import assert from 'node:assert/strict';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { createRequire } from 'node:module';
+const { chromium } = await import(process.env.QA_PLAYWRIGHT_MODULE ? pathToFileURL(resolve(process.env.QA_PLAYWRIGHT_MODULE)).href : 'playwright');
+const base = process.env.QA_BASE ?? 'http://localhost:3000';
+const output = resolve('.data/merchant-qa'); await mkdir(output, { recursive: true });
+const browser = await chromium.launch({ channel: 'chrome', headless: true });
+const errors = [];
+try {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+  const login = await context.request.post(base + '/api/users/login', { headers: { Origin: base }, data: { email: process.env.QA_EMAIL ?? 'customer@preview.zonify.test', password: process.env.QA_PASSWORD ?? 'ZonifyDemo2026!' } }); assert.equal(login.status(), 200);
+  const page = await context.newPage(); page.on('pageerror', error => errors.push(error.message));
+  await page.goto(base + '/merchant?market=canal'); await page.getByRole('button', { name: 'เพิ่มร้านใหม่', exact: true }).click();
+  const name = 'ร้านทดสอบ ' + Date.now();
+  await page.getByLabel('ชื่อร้าน', { exact: true }).fill(name);
+  await page.locator('#merchant-market').selectOption('canal');
+  const category = await page.locator('#merchant-category option').nth(1).getAttribute('value'); await page.locator('#merchant-category').selectOption(category);
+  await page.getByLabel('เบอร์โทรติดต่อร้าน').fill('0812345678');
+  await page.getByRole('button', { name: 'บันทึกข้อมูลร้าน', exact: true }).focus(); await page.keyboard.press('Enter'); await page.getByText('บันทึกข้อมูลร้านแล้ว', { exact: true }).waitFor();
+  const shops = await (await context.request.get(base + '/api/merchant/shops')).json(); const shop = shops.items.find(s => s.name === name); assert(shop);
+  await page.getByLabel('ชื่อร้าน', { exact: true }).fill(name + ' local');
+  page.once('dialog', dialog => dialog.dismiss()); await page.getByRole('button', { name: 'ออกจากระบบ', exact: true }).click();
+  assert.equal(await page.getByLabel('ชื่อร้าน', { exact: true }).inputValue(), name + ' local');
+  assert.equal((await context.request.get(base + '/api/users/me')).status(), 200);
+  // Another tab wins; the editor must preserve the draft and offer a recovery path.
+  const patch = await context.request.patch(base + '/api/merchant/shops/' + shop.id, { headers: { Origin: base }, data: { version: shop.version, name: name + ' remote' } }); assert.equal(patch.status(), 200);
+  await page.getByRole('button', { name: 'บันทึกข้อมูลร้าน', exact: true }).click();
+  await page.getByRole('button', { name: 'โหลดเวอร์ชันล่าสุดและคงข้อมูลที่กรอก' }).click();
+  assert.equal(await page.getByLabel('ชื่อร้าน', { exact: true }).inputValue(), name + ' local');
+  await page.getByRole('button', { name: 'บันทึกข้อมูลร้าน', exact: true }).click(); await page.getByText('บันทึกข้อมูลร้านแล้ว', { exact: true }).waitFor();
+  await page.route('**/api/merchant/shops/' + shop.id, route => route.request().method() === 'PATCH' ? route.abort() : route.continue());
+  await page.getByLabel('รายละเอียดและสินค้าที่ขาย').fill('คงข้อมูลเมื่อเครือข่ายล้มเหลว'); await page.getByRole('button', { name: 'บันทึกข้อมูลร้าน', exact: true }).click();
+  await page.getByRole('alert').filter({ hasText: 'เชื่อมต่อไม่ได้' }).waitFor(); assert.equal(await page.getByLabel('รายละเอียดและสินค้าที่ขาย').inputValue(), 'คงข้อมูลเมื่อเครือข่ายล้มเหลว');
+  await page.unroute('**/api/merchant/shops/' + shop.id); await page.getByRole('button', { name: 'บันทึกข้อมูลร้าน', exact: true }).click(); await page.getByText('บันทึกข้อมูลร้านแล้ว', { exact: true }).waitFor();
+  const sharp = createRequire(resolve('backend/package.json'))('sharp');
+  const png = await sharp({ create: { width: 120, height: 80, channels: 3, background: '#3b7054' } }).png().toBuffer();
+  await page.locator('#merchant-photo').setInputFiles({ name: 'shop.png', mimeType: 'image/png', buffer: png });
+  await page.getByRole('button', { name: 'อัปโหลดรูปร้าน', exact: true }).click(); await page.getByText('บันทึกรูปร้านแล้ว', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'ปิดแบบฟอร์ม', exact: true }).click();
+  for (const width of [360, 390, 768, 1440]) { await page.setViewportSize({ width, height: 900 }); assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'merchant overflow ' + width); await page.screenshot({ path: resolve(output, `merchant-${width}.png`), fullPage: true }); }
+  await page.setViewportSize({ width: 390, height: 844 });
+  const date = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(Date.now() + 86400000));
+  const floor = await (await context.request.get(base + `/api/markets/canal/floor-plan?date=${date}`)).json(); const stall = floor.stalls.find(s => s.status === 'available'); assert(stall);
+  await page.goto(base + '/?' + new URLSearchParams({ market: 'canal', date, stall: stall.id }) + '#floor-plan');
+  await page.locator('select[id^="booking-shop-"]').selectOption(shop.id);
+  await page.getByRole('button', { name: 'พักล็อกนี้ 10 นาที', exact: true }).click(); await page.waitForURL(/\/bookings\//);
+  await page.getByText(name + ' local', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'ดำเนินการชำระเงิน', exact: true }).click(); await page.getByRole('button', { name: 'แสดง QR ชำระเงิน', exact: true }).waitFor();
+  await page.screenshot({ path: resolve(output, 'booking-mobile.png'), fullPage: true });
+  await page.goto(base + '/bookings?shop=' + shop.id + '&group=current'); await page.locator('.booking-card').getByText('ร้าน: ' + name + ' local', { exact: true }).waitFor();
+  assert.equal(await page.locator('#booking-shop-filter').inputValue(), shop.id); await page.locator('#booking-group').selectOption('history'); await page.goBack(); assert.equal(await page.locator('#booking-group').inputValue(), 'current');
+  await page.reload(); await page.locator(`#booking-shop-filter option[value="${shop.id}"]`).waitFor({ state: 'attached' }); assert.equal(await page.locator('#booking-shop-filter').inputValue(), shop.id);
+  await page.goto(base + '/shops/' + shop.id + '?date=' + date); await page.getByRole('link', { name: '0812345678' }).waitFor();
+  await page.goto(base + '/?' + new URLSearchParams({ market: 'canal', date, q: name + ' local' }) + '#shops');
+  const directoryShop = page.locator('.shop-card').filter({ hasText: name + ' local' }); await directoryShop.getByText('ตำแหน่งวันที่ ' + date).waitFor();
+  const href = await directoryShop.getByRole('link', { name: 'ดูรายละเอียด ' + name + ' local' }).getAttribute('href'); assert.equal(new URL(href, base).searchParams.get('date'), date);
+  assert.deepEqual(errors, []); await writeFile(resolve(output, 'result.json'), JSON.stringify({ passed: true, name, shopId: shop.id, browserErrors: errors, checks: ['create/edit', 'multi-account API covered separately', 'photo', 'conflict recovery', 'logout guard', 'network draft', 'responsive', 'shop hold', 'confirm payment stage', 'URL history', 'public contacts'] }, null, 2));
+  console.log('Merchant browser QA passed');
+} finally { await browser.close(); }

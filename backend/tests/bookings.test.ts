@@ -7,7 +7,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { UserModel } from "../src/modules/users/schema/user.schema.js";
-import { MarketModel, ZoneModel, StallModel, StallDayStateModel } from "../src/modules/catalog/catalog.schema.js";
+import { MarketModel, ZoneModel, StallModel, StallDayStateModel, ShopModel, CategoryModel } from "../src/modules/catalog/catalog.schema.js";
 import { BookingModel } from "../src/modules/bookings/booking.schema.js";
 import { createHold, confirmBooking, cancelBooking, expireBookings, HOLD_MS, PAYMENT_MS } from "../src/modules/bookings/booking.service.js";
 import { bangkokDate, floorPlan } from "../src/modules/catalog/catalog.service.js";
@@ -30,6 +30,9 @@ before(async () => {
     const user = await UserModel.create({ name: "Buyer " + n, email: "buyer" + n + "@qa.test", password, role: "customer" }); userIds.push(String(user._id));
   }
   for (const role of ["manager", "owner"]) await UserModel.create({ name: role, email: role + "@qa.test", password, role });
+  await CategoryModel.create({ _id: "book-food", name: "อาหาร" });
+  await ShopModel.create({ _id: "book-shop", ownerId: userIds[0], marketId: "book-market", categoryId: "book-food", name: "ร้านทดสอบ" });
+  for (const ownerId of userIds) await ShopModel.create({ _id: "shop-" + ownerId, ownerId, marketId: "book-market", categoryId: "book-food", name: "ร้านแข่งขัน" });
   server = app.listen(0, "127.0.0.1"); await once(server, "listening"); const address = server.address(); assert(address && typeof address !== "string"); base = "http://127.0.0.1:" + address.port + "/api";
   async function login(email: string) {
     const res = await fetch(base + "/users/login", { method: "POST", headers: { Origin: origin, "Content-Type": "application/json" }, body: JSON.stringify({ email, password: "booking-test-123" }) }); assert.equal(res.status, 200); return res.headers.get("set-cookie")!.split(";")[0]!;
@@ -47,16 +50,16 @@ async function request(path: string, method = "GET", body?: unknown, cookie = co
   const response = await fetch(base + path, { method, headers: { Cookie: cookie, ...(originHeader ? { Origin: origin } : {}), ...(body === undefined ? {} : { "Content-Type": "application/json" }) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
   return { status: response.status, data: await response.json() };
 }
-const hold = () => request("/bookings/holds", "POST", { stallId: "book-stall-1", date });
+const hold = () => request("/bookings/holds", "POST", { stallId: "book-stall-1", date, shopId: "book-shop" });
 
 test("booking endpoints require session, correct Origin and a single valid future stall/date", async () => {
   assert.equal((await request("/bookings/me", "GET", undefined, "")).status, 401);
   assert.equal((await request("/bookings/holds", "POST", { stallId: "book-stall-1", date }, cookies[0], false)).status, 403);
   for (const body of [{ stallId: ["book-stall-1", "book-stall-2"], date }, { stallId: "book-stall-1", date: "2020-01-01" }, { stallId: "book-stall-1", date: "2026-02-30" }, { stallId: "book-stall-1", date, price: 1 }, { stallId: "book-stall-1", date: "9999-01-01" }]) assert.equal((await request("/bookings/holds", "POST", body)).status, 400);
-  assert.equal((await request("/bookings/holds", "POST", { stallId: "missing", date })).status, 404);
+  assert.equal((await request("/bookings/holds", "POST", { stallId: "missing", date, shopId: "book-shop" })).status, 404);
 });
 test("twenty distinct concurrent buyers produce exactly one slot/day claim", async () => {
-  const results = await Promise.allSettled(userIds.map(id => createHold(id, "book-stall-1", date)));
+  const results = await Promise.allSettled(userIds.map(id => createHold(id, "book-stall-1", date, "shop-" + id)));
   assert.equal(results.filter(r => r.status === "fulfilled").length, 1);
   assert(results.filter(r => r.status === "rejected").every(r => r.status === "rejected" && r.reason.status === 409));
   assert.equal(await BookingModel.countDocuments({ status: "held" }), 1);
@@ -79,21 +82,21 @@ test("public status changes on hold/confirmation/cancellation and a different da
   assert(await BookingModel.exists({ _id: created.data.id }));
 });
 test("expired claims can be acquired by another buyer; stale operations cannot affect the successor", async () => {
-  const now = new Date(), first = await createHold(userIds[0]!, "book-stall-1", date, now);
+  const now = new Date(), first = await createHold(userIds[0]!, "book-stall-1", date, "shop-" + userIds[0], now);
   const later = new Date(now.valueOf() + HOLD_MS + 1);
   assert.equal((await floorPlan("book-market", date, later)).stalls[0]!.status, "available");
-  const successor = await createHold(userIds[1]!, "book-stall-1", date, later); assert.notEqual(successor.id, first.id);
+  const successor = await createHold(userIds[1]!, "book-stall-1", date, "shop-" + userIds[1], later); assert.notEqual(successor.id, first.id);
   await assert.rejects(confirmBooking(String(first.id), userIds[0]!, later), (e: unknown) => !!e && typeof e === "object" && "status" in e && e.status === 409);
   await assert.rejects(cancelBooking(String(first.id), userIds[0]!, "ยกเลิก", false, later));
   assert.equal((await BookingModel.findById(String(first.id)).lean())!.status, "expired");
   assert.equal((await BookingModel.findById(String(successor.id)).lean())!.status, "held");
 });
 test("pending-payment deadline expires, preserves history and releases the unique claim", async () => {
-  const now = new Date(), first = await createHold(userIds[0]!, "book-stall-1", date, now);
+  const now = new Date(), first = await createHold(userIds[0]!, "book-stall-1", date, "shop-" + userIds[0], now);
   const confirmed = await confirmBooking(String(first.id), userIds[0]!, now); assert.equal(confirmed.status, "pending_payment");
   const later = new Date(now.valueOf() + PAYMENT_MS + 1); await expireBookings(later);
   assert.equal((await BookingModel.findById(String(first.id)).lean())!.status, "expired");
-  assert.equal((await createHold(userIds[1]!, "book-stall-1", date, later)).status, "held");
+  assert.equal((await createHold(userIds[1]!, "book-stall-1", date, "shop-" + userIds[1], later)).status, "held");
 });
 test("expiry worker updates overdue records automatically without deleting booking history", async () => {
   const first = await hold();
@@ -140,7 +143,7 @@ test("closed market/zone/stall and sample booked/held states block acquisition",
   await StallDayStateModel.updateOne({ stallId: "book-stall-1", date }, { $set: { status: "held", expiresAt: new Date(0) } }); assert.equal((await hold()).status, 201);
 });
 test("manager queries and customer history support date/market/status filtering and pagination", async () => {
-  await hold(); await request("/bookings/holds", "POST", { stallId: "book-stall-2", date });
+  await hold(); await request("/bookings/holds", "POST", { stallId: "book-stall-2", date, shopId: "book-shop" });
   const one = await request("/bookings/me?limit=1&page=1"), two = await request("/bookings/me?limit=1&page=2");
   assert.equal(one.data.total, 2); assert.equal(one.data.pages, 2); assert.notEqual(one.data.items[0].id, two.data.items[0].id);
   assert.equal((await request("/admin/bookings?date=" + date + "&market=book-market&status=held", "GET", undefined, manager)).data.total, 2);

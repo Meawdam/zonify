@@ -5,6 +5,7 @@ export function useUnsavedGuard(dirty: boolean) {
   useEffect(() => {
     if (!dirty) return;
     const unload = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    const beforeLogout = (event: Event) => { if (!discardEdits()) event.preventDefault(); };
     const originPath = location.pathname;
     const navigation = (window as Window & { navigation?: EventTarget }).navigation;
     // The navigate event precedes popstate and Next's synchronous route restoration.
@@ -20,7 +21,8 @@ export function useUnsavedGuard(dirty: boolean) {
       if (!discardEdits()) { event.preventDefault(); event.stopImmediatePropagation(); }
     };
     navigation?.addEventListener("navigate", beforeTraverse);
+    window.addEventListener("zonify-before-logout", beforeLogout);
     window.addEventListener("beforeunload", unload); document.addEventListener("click", navigate, true);
-    return () => { navigation?.removeEventListener("navigate", beforeTraverse); window.removeEventListener("beforeunload", unload); document.removeEventListener("click", navigate, true); };
+    return () => { window.removeEventListener("zonify-before-logout", beforeLogout); navigation?.removeEventListener("navigate", beforeTraverse); window.removeEventListener("beforeunload", unload); document.removeEventListener("click", navigate, true); };
   }, [dirty]);
 }

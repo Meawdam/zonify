@@ -8,7 +8,7 @@ import bcrypt from "bcrypt";
 import sharp from "sharp";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { UserModel } from "../src/modules/users/schema/user.schema.js";
-import { MarketModel, StallModel } from "../src/modules/catalog/catalog.schema.js";
+import { MarketModel, StallModel, ShopModel, CategoryModel } from "../src/modules/catalog/catalog.schema.js";
 import { BookingModel } from "../src/modules/bookings/booking.schema.js";
 import { SlipModel } from "../src/modules/payments/payment.schema.js";
 import { createHold, confirmBooking, expireBookings, cancelBooking } from "../src/modules/bookings/booking.service.js";
@@ -33,6 +33,8 @@ before(async () => {
     const user = await UserModel.create({ name: "Payment " + n, email: "pay" + n + "@qa.test", password, role });
     if (n === 0) buyer = String(user._id); if (n === 2) managerId = String(user._id);
   }
+  await CategoryModel.create({ _id: "pay-category", name: "อาหาร" });
+  await ShopModel.create({ _id: "pay-shop", ownerId: buyer, marketId: "pay-market", categoryId: "pay-category", name: "ร้านชำระเงิน" });
   server = app.listen(0, "127.0.0.1"); await once(server, "listening"); const address = server.address(); assert(address && typeof address !== "string"); base = "http://127.0.0.1:" + address.port + "/api";
   for (let n = 0; n < 4; n++) {
     const res = await fetch(base + "/users/login", { method: "POST", headers: { Origin: origin, "Content-Type": "application/json" }, body: JSON.stringify({ email: "pay" + n + "@qa.test", password: "payment-test-123" }) }); assert.equal(res.status, 200); cookies.push(res.headers.get("set-cookie")!.split(";")[0]!);
@@ -45,7 +47,7 @@ async function request(path: string, body?: unknown, who = 0, sendOrigin = true)
   const res = await fetch(base + path, { method: body === undefined ? "GET" : "POST", headers: { Cookie: cookies[who] ?? "", ...(sendOrigin ? { Origin: origin } : {}), ...(body === undefined ? {} : { "Content-Type": "application/json" }) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
   return { status: res.status, data: await res.json() };
 }
-async function pending(stall = 1) { const hold = await createHold(buyer, "pay-stall-" + stall, date); const booking = await confirmBooking(hold.id as string, buyer); return booking.id as string; }
+async function pending(stall = 1) { const hold = await createHold(buyer, "pay-stall-" + stall, date, "pay-shop"); const booking = await confirmBooking(hold.id as string, buyer); return booking.id as string; }
 async function qr(id: string) { return request("/bookings/" + id + "/payment/qr", {}); }
 async function upload(id: string, opts: { who?: number; amount?: string; reference?: string; data?: Buffer; type?: string; extra?: boolean; origin?: boolean } = {}) {
   const form = new FormData(); form.set("amount", opts.amount ?? "125.25"); form.set("transferredAt", new Date().toISOString()); form.set("reference", opts.reference ?? "TRANSFER-1234");

@@ -6,6 +6,7 @@ import { ensureCatalogIndexes } from "../modules/catalog/catalog.schema.js";
 import { BookingModel } from "../modules/bookings/booking.schema.js";
 import { SlipModel } from "../modules/payments/payment.schema.js";
 import { AdvertisementModel } from "../modules/advertisements/advertisement.schema.js";
+import { ShopPhotoModel } from "../modules/merchant/merchant-photo.js";
 export const connectDatabase = async () => {
   await mongoose.connect(env.MONGO_URI);
   // Never normalize or merge existing records implicitly during startup.
@@ -20,5 +21,6 @@ export const connectDatabase = async () => {
   await BookingModel.createIndexes();
   await SlipModel.createIndexes();
   await AdvertisementModel.createIndexes();
+  await ShopPhotoModel.createIndexes();
   console.log("MongoDB connected");
 };

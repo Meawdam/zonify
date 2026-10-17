@@ -8,6 +8,8 @@ import { swaggerSpec } from "./config/swagger.js";
 import { errorHandler } from "./middlewares/error-handler.js";
 
 import userRouter from "./modules/users/user.route.js"
+import merchantRouter from "./modules/merchant/merchant.route.js";
+import { publicShopPhotoRouter } from "./modules/merchant/merchant-photo.js";
 import { requireOrigin } from "./middlewares/request-security.js";
 import catalogRouter from "./modules/catalog/catalog.route.js";
 import adminRouter from "./modules/admin/admin.route.js";
@@ -37,6 +39,8 @@ app.use(
 );
 
 app.use("/api/users", userRouter);
+app.use("/api/merchant", merchantRouter);
+app.use("/api", publicShopPhotoRouter);
 app.use("/api/bookings", bookingRouter);
 app.use("/api/bookings", paymentRouter);
 app.use("/api/admin/bookings", paymentAdminRouter);

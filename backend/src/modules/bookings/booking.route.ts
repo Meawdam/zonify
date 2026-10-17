@@ -9,7 +9,7 @@ router.use(authMiddleware);
 router.use((_req, res, next) => { res.set("Cache-Control", "no-store"); next(); });
 router.post("/holds", async (req: AuthRequest, res) => {
   const body = holdDto.parse(req.body);
-  res.status(201).json(await createHold(req.user!.id, body.stallId, body.date));
+  res.status(201).json(await createHold(req.user!.id, body.stallId, body.date, body.shopId));
 });
 router.get("/me", async (req: AuthRequest, res) => res.json(await listBookings(bookingQuery.parse(req.query), req.user!.id)));
 router.get("/:id", async (req: AuthRequest, res) => res.json(await getBooking(slug.parse(req.params.id), req.user!.id)));

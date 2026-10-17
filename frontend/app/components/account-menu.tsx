@@ -13,12 +13,14 @@ export function AccountMenu({ user }: { user: User | null }) {
     window.location.assign("/admin");
   }
   async function logout() {
+    if (!window.dispatchEvent(new Event("zonify-before-logout", { cancelable: true }))) return;
     setBusy(true); setError("");
     try { await api("/logout", { method: "POST" }); router.push("/login"); router.refresh(); }
     catch (error) { setError(error instanceof Error ? error.message : "ออกจากระบบไม่สำเร็จ"); }
     finally { setBusy(false); }
   }
   return <div className="account-menu">
+    {user && <Link href="/merchant">ร้านของฉัน</Link>}
     {user && <Link href="/bookings">รายการจองของฉัน</Link>}
     {/* A document boundary makes cross-route Back trigger beforeunload in browsers without Navigation API. */}
     {user && user.role !== "customer" && <Link href="/admin" prefetch={false} onNavigate={enterAdmin}>จัดการตลาด</Link>}

@@ -10,6 +10,7 @@ import { PaymentPanel } from "./payment-panel";
 import { DataWarning } from "./data-warning";
 import { useURLState } from "../lib/use-url-state";
 import { pageNumber, resourceId } from "../lib/url-state";
+import type { MerchantShops } from "../lib/merchant";
 
 function useBookingClock() {
   const [now, setNow] = useState<number | null>(null);
@@ -26,6 +27,7 @@ function Expiry({ booking, now }: { booking: Booking; now: number | null }) {
 }
 function BookingFacts({ booking }: { booking: Booking }) {
   return <dl className="booking-facts">
+    <div><dt>ร้านที่จอง</dt><dd>{booking.shop?.name ?? "รายการเดิมที่ยังไม่ได้ผูกร้าน"}</dd></div>
     <div><dt>ตลาด / ล็อก</dt><dd>{booking.stall.marketName} • {booking.stall.code}</dd></div>
     <div><dt>วันที่จอง</dt><dd>{bookingDate(booking.date)}</dd></div>
     <div><dt>ขนาดพื้นที่</dt><dd>{booking.stall.width} × {booking.stall.depth} เมตร{booking.stall.zoneName ? " • " + booking.stall.zoneName : ""}</dd></div>
@@ -86,6 +88,9 @@ export function BookingList({ manager = false, holdsOnly = false, defaultStatus 
   const [notice, setNotice] = useState("");
   const { params, update } = useURLState();
   const refs = usePublicData<{ items: Market[] }>("/api/markets");
+  const shops = usePublicData<MerchantShops>(manager ? null : "/api/merchant/shops");
+  const shop = resourceId(params.get("shop"));
+  const group = ["current", "history", "action"].includes(params.get("group") ?? "") ? params.get("group")! : "";
   const status = params.has("status") ? Object.keys(bookingStatusLabels).find(s => s === params.get("status")) ?? "" : defaultStatus;
   const date = validDate(params.get("date") ?? "") ? params.get("date")! : "", requestedMarket = resourceId(params.get("market")), page = pageNumber(params.get("page"));
   const market = !refs.data || refs.data.items.some(m => m.id === requestedMarket) ? requestedMarket : "";
@@ -93,16 +98,18 @@ export function BookingList({ manager = false, holdsOnly = false, defaultStatus 
   function setDate(value: string) { update({ date: value, page: null }); }
   function setMarket(value: string) { update({ market: value, page: null }); }
   function setPage(value: number) { update({ page: value }); }
-  const query = new URLSearchParams({ page: String(page), limit: "6", ...(status && !holdsOnly ? { status } : {}), ...(date ? { date } : {}), ...(market ? { market } : {}) });
+  const query = new URLSearchParams({ page: String(page), limit: "6", ...(!manager && group ? { group } : {}), ...(shop ? { shop } : {}), ...(status && !holdsOnly ? { status } : {}), ...(date ? { date } : {}), ...(market ? { market } : {}) });
   const result = usePublicData<BookingResults>((manager ? "/api/admin/" + (holdsOnly ? "holds" : "bookings") : "/api/bookings/me") + "?" + query, 5000, true), now = useBookingClock();
   return <section className="booking-list">
     {notice && <p className="form-notice" role="status">{notice}</p>}
     {manager && <div className="admin-section-heading"><div><h2>{holdsOnly ? "จัดการพักล็อก" : "จัดการรายการจอง"}</h2><p>ตรวจสถานะและข้อมูลผู้จอง ระบุเหตุผลก่อน{holdsOnly ? "คืนล็อก" : "ยกเลิก"}</p></div></div>}
     <div className="booking-filters">
+      {!manager && <label htmlFor="booking-group">กลุ่มรายการ<select id="booking-group" value={group} onChange={e => update({ group: e.target.value, status: "all", page: null })}><option value="">ทั้งหมด</option><option value="current">รายการปัจจุบัน</option><option value="action">ต้องดำเนินการ</option><option value="history">ประวัติ</option></select></label>}
+      {!manager && <label htmlFor="booking-shop-filter">ร้าน<select id="booking-shop-filter" value={shop} onChange={e => update({ shop: e.target.value, page: null })}><option value="">ทุกร้าน</option>{shops.data?.items.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></label>}
       {!holdsOnly && <label htmlFor="booking-status">สถานะ<select id="booking-status" aria-label="สถานะ" value={status} onChange={e => setStatus(e.target.value)}><option value="">ทุกสถานะ</option>{Object.entries(bookingStatusLabels).map(([key, label]) => <option value={key} key={key}>{label}</option>)}</select></label>}
       <label htmlFor="booking-date">วันที่จอง<input id="booking-date" type="date" value={date} onChange={e => setDate(e.target.value)}/></label>
       <label htmlFor="booking-market">ตลาด<select id="booking-market" aria-label="ตลาด" value={market} disabled={!refs.data} onChange={e => setMarket(e.target.value)}><option value="">ทุกตลาด</option>{refs.data?.items.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}</select></label>
-      <button className="text-link" onClick={() => update({ status: "all", date: null, market: null, page: null })}>ล้างตัวกรอง</button><button className="text-link" onClick={result.retry}>รีเฟรชรายการ</button>
+      <button className="text-link" onClick={() => update({ status: "all", date: null, market: null, shop: null, group: null, page: null })}>ล้างตัวกรอง</button><button className="text-link" onClick={result.retry}>รีเฟรชรายการ</button>
     </div>
     {refs.error && <p className="form-alert" role="alert">{refs.error} <button className="text-link" onClick={refs.retry}>ลองโหลดตลาดใหม่</button></p>}
     <DataWarning error={result.refreshError} retry={result.retry}/>
@@ -111,6 +118,7 @@ export function BookingList({ manager = false, holdsOnly = false, defaultStatus 
       {!result.data.items.length ? <p className="catalog-state">ยังไม่มีรายการที่ตรงกับตัวกรอง</p> : <div className="booking-grid">{result.data.items.map(booking => <article className="booking-card" key={booking.id}>
         <div className="booking-card-heading"><h3>{booking.stall.marketName} • {booking.stall.code}</h3><span className={"booking-status " + booking.status}>{bookingStatusLabels[booking.status]}</span></div>
         <p className="booking-reference">{booking.id}</p><p>{bookingDate(booking.date)} • {baht(booking.price)} บาท</p>
+        <p>ร้าน: {booking.shop?.name ?? "รายการเดิมที่ยังไม่ได้ผูกร้าน"}</p>
         {manager && <div className="booking-customer"><strong>{booking.customer.name}</strong><span>{booking.customer.email} • {booking.customer.phone || "ไม่ระบุเบอร์โทร"}</span></div>}
         <Expiry booking={booking} now={now}/>{booking.cancelReason && <p className="form-description">เหตุผล: {booking.cancelReason}</p>}
         <BookingControl booking={booking} manager={manager} holdsOnly={holdsOnly} now={now} refresh={result.retry} onNotice={setNotice}/>{!manager && <Link className="text-link" href={"/bookings/" + booking.id}>ดูรายละเอียดรายการ</Link>}

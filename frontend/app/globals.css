@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+.booking-shop-select{display:grid;gap:10px;margin-bottom:16px}.booking-shop-select label{display:grid;gap:8px}.booking-shop-select select{width:100%;min-height:44px;padding:10px;border:1px solid #aebfb4;border-radius:8px;background:white;font:inherit}
+
 .booking-progress { display: flex; flex-wrap: wrap; gap: 12px 24px; padding: 16px 0; list-style: none; color: var(--muted); }
 .booking-progress [aria-current="step"] { color: var(--green); font-weight: 700; border-bottom: 2px solid var(--orange); }
 .button-green:hover:not(:disabled) { background: #285447; }

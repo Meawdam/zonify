@@ -4,7 +4,7 @@ export type StallStatus = "available" | "booked" | "held" | "unavailable";
 export const statusLabels: Record<StallStatus, string> = { available: "ว่าง", booked: "จองแล้ว", held: "พักล็อก", unavailable: "ปิดใช้งาน" };
 export type Stall = { id: string; code: string; row: string; rowOrder: number; column: number; width: number; depth: number; pricePerDay: number; description: string; zoneId: string | null; zoneName: string | null; status: StallStatus; holdExpiresAt: string | null };
 export type FloorPlan = { market: Omit<Market, "minPrice">; date: string; updatedAt: string; counts: Record<StallStatus, number>; stalls: Stall[] };
-export type Shop = { id: string; name: string; description: string; hours: string; market: { id: string; name: string; location: string }; category: Category; stall: { id: string; code: string } | null };
+export type Shop = { id: string; name: string; description: string; hours: string; phone?: string; contactUrl?: string; photoUrl?: string | null; locations?: { id: string; code: string }[]; locationDate?: string; locationSource?: string; market: { id: string; name: string; location: string }; category: Category; stall: { id: string; code: string } | null };
 export type ShopResults = { items: Shop[]; total: number; page: number; limit: number; pages: number };
 export const baht = (amount: number) => new Intl.NumberFormat("th-TH", { maximumFractionDigits: 2 }).format(amount);
 export function validDate(value: string) {
