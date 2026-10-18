@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import { notificationEventSchema } from "../notifications/notification.event.js";
 export const activeBookingStatuses = ["held", "pending_payment", "payment_review", "confirmed"] as const;
 export const bookingStatuses = [...activeBookingStatuses, "cancelled", "expired"] as const;
 const bookingSchema = new Schema({
@@ -12,7 +13,8 @@ const bookingSchema = new Schema({
   stallSnapshot: { code: String, width: Number, depth: Number, marketName: String, zoneName: String },
   date: { type: String, required: true, index: true },
   price: { type: Number, required: true, min: 0 },
-  status: { type: String, enum: bookingStatuses, required: true },
+  status: { type: String, enum: [...bookingStatuses, "preparing"], required: true },
+  notificationEvents: { type: [notificationEventSchema], default: [] },
   expiresAt: { type: Date, default: null },
   cancelledAt: { type: Date, default: null },
   cancelReason: { type: String, default: "" },
@@ -36,6 +38,7 @@ const bookingSchema = new Schema({
 // so holds, confirmations and cancellations remain atomic on standalone MongoDB.
 bookingSchema.index({ stallId: 1, date: 1 }, { unique: true, partialFilterExpression: { status: { $in: [...activeBookingStatuses] } } });
 bookingSchema.index({ status: 1, expiresAt: 1 });
+bookingSchema.index({ "notificationEvents.deliveredAt": 1 });
 bookingSchema.index({ userId: 1, createdAt: -1, _id: 1 });
 bookingSchema.index({ approvedReference: 1 }, { unique: true, partialFilterExpression: { approvedReference: { $type: "string" } } });
 bookingSchema.index({ approvedSlipHash: 1 }, { unique: true, partialFilterExpression: { approvedSlipHash: { $type: "string" } } });

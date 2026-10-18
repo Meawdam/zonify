@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, type User } from "../lib/auth";
+import { NotificationBell } from "./notifications";
 export function AccountMenu({ user }: { user: User | null }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -20,6 +21,7 @@ export function AccountMenu({ user }: { user: User | null }) {
     finally { setBusy(false); }
   }
   return <div className="account-menu">
+    {user && <NotificationBell key={user.id}/>}
     {user && <Link href="/merchant">ร้านของฉัน</Link>}
     {user && <Link href="/bookings">รายการจองของฉัน</Link>}
     {/* A document boundary makes cross-route Back trigger beforeunload in browsers without Navigation API. */}

@@ -39,8 +39,8 @@ export function usePublicData<T>(url: string | null, pollMs = 0, keepPrevious = 
     const firstPoll = pollMs ? setTimeout(() => {
       refreshVisible(); timer = setInterval(refreshVisible, pollMs);
     }, seedFresh ? Math.max(1, pollMs - (Date.now() - seededAt)) : pollMs) : null;
-    if (pollMs) window.addEventListener("focus", refreshVisible);
-    return () => { controller.abort(); if (timer) clearInterval(timer); if (firstPoll) clearTimeout(firstPoll); window.removeEventListener("focus", refreshVisible); };
+    if (pollMs) { window.addEventListener("focus", refreshVisible); document.addEventListener("visibilitychange", refreshVisible); }
+    return () => { controller.abort(); if (timer) clearInterval(timer); if (firstPoll) clearTimeout(firstPoll); window.removeEventListener("focus", refreshVisible); document.removeEventListener("visibilitychange", refreshVisible); };
   }, [url, key, pollMs, keepPrevious, seedUrl, seededAt, attempt]);
   const sameResource = !!url && result?.sourceUrl === url;
   const current = sameResource && result.key === key ? result : null;

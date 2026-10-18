@@ -33,7 +33,7 @@ export function safeLoginNext(value: string | undefined) {
   if (!value) return "/";
   try {
     const url = new URL(value, "http://zonify.local");
-    if (url.origin !== "http://zonify.local" || !(url.pathname === "/" || url.pathname === "/merchant" || /^\/bookings(?:\/[a-zA-Z0-9-]+)?$/.test(url.pathname))) return "/";
+    if (url.origin !== "http://zonify.local" || !(url.pathname === "/" || url.pathname === "/merchant" || url.pathname === "/notifications" || /^\/bookings(?:\/[a-zA-Z0-9-]+)?$/.test(url.pathname))) return "/";
     return url.pathname + url.search + url.hash;
   } catch { return "/"; }
 }

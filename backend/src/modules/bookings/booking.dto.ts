@@ -10,6 +10,7 @@ export const bookingQuery = z.object({
   status: z.enum(bookingStatuses).optional(),
   date: dateQuery.optional(), market: slug.optional(),
   shop: slug.optional(),
+  refund: z.literal("pending").optional(),
   group: z.enum(["current", "history", "action"]).optional(),
   page: z.coerce.number().int().min(1).max(10000).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(12),

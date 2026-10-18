@@ -1,0 +1,9 @@
+.schedule-editor { display: grid; gap: 20px; margin-top: 24px; }
+.schedule-editor form { display: grid; gap: 16px; }
+.schedule-editor fieldset { min-width: 0; border: 1px solid #d9dfd8; border-radius: 12px; padding: 16px; }
+.schedule-editor legend { padding: 0 6px; font-weight: 600; }
+.schedule-editor .booking-filters label { display: flex; flex-direction: row; align-items: center; gap: 8px; }
+.schedule-editor input[type="checkbox"] { width: 18px; height: 18px; min-height: 18px; accent-color: #265c46; }
+.schedule-editor .admin-filters { margin-bottom: 12px; }
+.schedule-editor .button { justify-self: start; }
+.schedule-editor h3 { margin-bottom: 0; }

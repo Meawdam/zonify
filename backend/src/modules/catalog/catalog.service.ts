@@ -2,6 +2,8 @@ import { z } from "zod";
 import { MarketModel, CategoryModel, ZoneModel, StallModel, StallDayStateModel, ShopModel } from "./catalog.schema.js";
 import { HttpError } from "../../middlewares/http-error.js";
 import { BookingModel, activeBookingStatuses } from "../bookings/booking.schema.js";
+import { ScheduleModel } from "../schedule/schedule.schema.js";
+import { opening, unavailableReason } from "../schedule/schedule.service.js";
 export function bangkokDate(now = new Date()) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
 }
@@ -38,9 +40,10 @@ export async function listCategories() {
 export async function floorPlan(marketId: string, date: string, now = new Date()) {
   const market = await MarketModel.findOne({ _id: marketId, active: true }).lean();
   if (!market) throw new HttpError(404, "MARKET_NOT_FOUND", "ไม่พบตลาดนี้");
-  const [stalls, zones] = await Promise.all([
+  const [stalls, zones, schedule] = await Promise.all([
     StallModel.find({ marketId }).sort({ rowOrder: 1, column: 1, code: 1 }).lean(),
     ZoneModel.find({ marketId }).sort({ order: 1, _id: 1 }).lean(),
+    ScheduleModel.findById(marketId).lean(),
   ]);
   const zonesById = new Map(zones.map(z => [z._id, z]));
   const [states, bookings] = await Promise.all([
@@ -53,7 +56,8 @@ export async function floorPlan(marketId: string, date: string, now = new Date()
   const items = stalls.map(s => {
     const state = byId.get(s._id);
     const booking = bookingById.get(s._id);
-    const enabled = s.enabled && (!s.zoneId || zonesById.get(s.zoneId)?.active === true);
+    const reason = !s.enabled ? "ล็อกปิดใช้งาน" : s.zoneId && zonesById.get(s.zoneId)?.active !== true ? "โซนปิดใช้งาน" : unavailableReason(schedule, date, s._id);
+    const enabled = !reason;
     let status: keyof typeof counts = enabled ? "available" : "unavailable";
     if (enabled && state) {
       // An invalid hold without an expiry fails closed. Expired holds are never shown as active.
@@ -64,9 +68,10 @@ export async function floorPlan(marketId: string, date: string, now = new Date()
     return { id: s._id, code: s.code, row: s.row, rowOrder: s.rowOrder, column: s.column,
       width: s.width, depth: s.depth, pricePerDay: s.pricePerDay, description: s.description,
       zoneId: s.zoneId ?? null, zoneName: s.zoneId ? zonesById.get(s.zoneId)?.name ?? null : null,
-      status, holdExpiresAt: status === "held" ? (booking?.expiresAt ?? state?.expiresAt)?.toISOString() ?? null : null };
+      status, unavailableReason: reason, holdExpiresAt: status === "held" ? (booking?.expiresAt ?? state?.expiresAt)?.toISOString() ?? null : null };
   });
-  return { market: marketPublic(market), date, updatedAt: now.toISOString(), counts, stalls: items };
+  const day = opening(schedule, date);
+  return { market: marketPublic(market), date, marketOpen: day.open, closedReason: day.reason, updatedAt: now.toISOString(), counts, stalls: items };
 }
 const escaped = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 async function directoryRefs() {

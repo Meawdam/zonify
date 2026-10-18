@@ -7,6 +7,7 @@ import { HttpError } from "../../middlewares/http-error.js";
 import { BookingModel } from "../bookings/booking.schema.js";
 import { expireBookings, presentBooking, PAYMENT_MS } from "../bookings/booking.service.js";
 import { SlipModel } from "./payment.schema.js";
+import { notificationEvent } from "../notifications/notification.event.js";
 import type { z } from "zod";
 import type { slipDto, reviewDto } from "./payment.dto.js";
 export const MAX_SLIP_BYTES = 5 * 1024 * 1024;
@@ -65,7 +66,7 @@ export async function submitSlip(id: string, userId: string, file: Express.Multe
   const slipHash = createHash("sha256").update(data).digest("hex");
   await SlipModel.create({ _id: slipId, bookingId: id, userId, data, bytes: data.length });
   // Only one concurrent upload wins. Expiry/cancel cannot be overwritten by a late image decode.
-  const updated = await BookingModel.findOneAndUpdate({ _id: id, userId, status: "pending_payment", expiresAt: { $gt: new Date() },
+  const updated = await BookingModel.findOneAndUpdate({ _id: id, userId, status: "pending_payment", $expr: { $gt: ["$expiresAt", "$$NOW"] },
     "paymentAttempts.9": { $exists: false } }, { $set: { status: "payment_review", expiresAt: null },
     $push: { paymentAttempts: { id: attemptId, slipId, slipHash, amount: body.amount, transferredAt: new Date(body.transferredAt),
       submittedReference: body.reference, submittedAt: now, status: "review" } } }, { returnDocument: "after" }).lean();
@@ -96,7 +97,9 @@ export async function reviewPayment(id: string, actorId: string, body: z.infer<t
     [`paymentAttempts.${index}.verifiedReference`]: body.verifiedReference });
   try {
     const updated = await BookingModel.findOneAndUpdate({ _id: id, status: "payment_review",
-      [`paymentAttempts.${index}.id`]: body.attemptId, [`paymentAttempts.${index}.status`]: "review" }, { $set: update }, { returnDocument: "after" }).lean();
+      [`paymentAttempts.${index}.id`]: body.attemptId, [`paymentAttempts.${index}.status`]: "review" }, { $set: update,
+      $push: { notificationEvents: notificationEvent(`${id}:${approve ? "approved" : "rejected"}:${body.attemptId}`,
+        approve ? "booking_approved" : "slip_rejected", approve ? "ตรวจรับเงินแล้ว การจองของคุณได้รับการยืนยัน" : `สลิปไม่ผ่านการตรวจสอบ: ${body.reason}`, now) } }, { returnDocument: "after" }).lean();
     if (!updated) throw new HttpError(409, "PAYMENT_CHANGED", "สถานะสลิปเปลี่ยนแล้ว กรุณาโหลดใหม่");
     return presentBooking(updated);
   } catch (error) {
@@ -110,7 +113,8 @@ export async function recordRefund(id: string, actorId: string, reference: strin
   if (!row) throw new HttpError(404, "BOOKING_NOT_FOUND", "ไม่พบรายการนี้");
   if (row.refund?.status === "refunded" && row.refund.reference === reference) return presentBooking(row);
   const updated = await BookingModel.findOneAndUpdate({ _id: id, status: "cancelled", "refund.status": "pending" },
-    { $set: { "refund.status": "refunded", "refund.completedAt": now, "refund.completedBy": actorId, "refund.reference": reference } }, { returnDocument: "after" }).lean();
+    { $set: { "refund.status": "refunded", "refund.completedAt": now, "refund.completedBy": actorId, "refund.reference": reference },
+      $push: { notificationEvents: notificationEvent(`${id}:refunded`, "refund_completed", "ผู้จัดการบันทึกการคืนเงินสำเร็จแล้ว ตรวจสอบรายละเอียดในรายการจอง", now) } }, { returnDocument: "after" }).lean();
   if (!updated) throw new HttpError(409, "REFUND_NOT_PENDING", "รายการนี้ไม่มีการคืนเงินที่รอบันทึก");
   return presentBooking(updated);
 }

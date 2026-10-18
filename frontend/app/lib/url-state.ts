@@ -1,4 +1,4 @@
-export const adminSections = ["markets", "categories", "zones", "stalls", "shops", "advertisements", "floor", "users", "bookings", "holds", "payments", "dashboard", "reports"] as const;
+export const adminSections = ["markets", "categories", "zones", "stalls", "shops", "advertisements", "floor", "users", "bookings", "holds", "payments", "dashboard", "reports", "schedule", "queue"] as const;
 export type AdminSection = typeof adminSections[number];
 export const adminSection = (value: string | null) => adminSections.find(section => section === value) ?? "markets";
 export const resourceId = (value: string | null | undefined) => value && /^[a-zA-Z0-9][a-zA-Z0-9-]{0,79}$/.test(value) ? value : "";
@@ -15,3 +15,4 @@ export function shopReturnHref(value: string | undefined) {
     return "/" + url.search + "#shops";
   } catch { return "/#shops"; }
 }
+export const bookingRefundFilter = (value: string | null, manager: boolean, holdsOnly: boolean) => manager && !holdsOnly && value === "pending" ? "pending" : "";

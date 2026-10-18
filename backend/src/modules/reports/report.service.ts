@@ -16,7 +16,7 @@ type BookingSummary = { _id: { period: string; market: string; status: string };
 export async function bookingReport(q: ReportQuery) {
   await expireBookings();
   const rows = await BookingModel.aggregate<BookingSummary>([
-    { $match: { date: { $gte: q.from, $lte: q.to }, ...(q.market ? { marketId: q.market } : {}) } },
+    { $match: { status: { $ne: "preparing" }, date: { $gte: q.from, $lte: q.to }, ...(q.market ? { marketId: q.market } : {}) } },
     { $group: { _id: { period: q.group === "month" ? { $substrBytes: ["$date", 0, 7] } : "$date", market: "$marketId", status: "$status" },
       marketName: { $last: "$stallSnapshot.marketName" }, count: { $sum: 1 }, cents: { $sum: cents } } },
     { $sort: { "_id.period": 1, "_id.market": 1, "_id.status": 1 } },
@@ -58,7 +58,7 @@ export async function dashboard(q: z.infer<typeof dashboardQuery>) {
   const [markets, shops, states, money] = await Promise.all([
     MarketModel.find({ active: true, ...(q.market ? { _id: q.market } : {}) }).sort({ order: 1, _id: 1 }).lean(),
     listShops({ q: "", page: 1, limit: 1, ...(q.market ? { market: q.market } : {}) }),
-    BookingModel.aggregate<{ _id: string; count: number }>([{ $match: { date: q.date, ...(q.market ? { marketId: q.market } : {}) } }, { $group: { _id: "$status", count: { $sum: 1 } } }]),
+    BookingModel.aggregate<{ _id: string; count: number }>([{ $match: { status: { $ne: "preparing" }, date: q.date, ...(q.market ? { marketId: q.market } : {}) } }, { $group: { _id: "$status", count: { $sum: 1 } } }]),
     revenueReport({ from: q.date, to: q.date, group: "day", ...(q.market ? { market: q.market } : {}) }),
   ]);
   const floors = await Promise.all(markets.map(m => floorPlan(m._id, q.date)));

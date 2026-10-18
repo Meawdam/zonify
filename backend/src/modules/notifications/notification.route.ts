@@ -1,0 +1,13 @@
+import { Router } from "express";
+import { z } from "zod";
+import { authMiddleware, type AuthRequest } from "../../middlewares/auth.middleware.js";
+import { listNotifications, markNotificationRead, markAllNotificationsRead } from "./notification.service.js";
+const router = Router();
+const query = z.object({ page: z.coerce.number().int().min(1).max(10000).default(1), limit: z.coerce.number().int().min(1).max(100).default(20) }).strict();
+const empty = z.object({}).strict();
+router.use(authMiddleware);
+router.use((_req, res, next) => { res.set("Cache-Control", "no-store"); next(); });
+router.get("/", async (req: AuthRequest, res) => { const { page, limit } = query.parse(req.query); res.json(await listNotifications(req.user!.id, page, limit)); });
+router.post("/read-all", async (req: AuthRequest, res) => { empty.parse(req.body); res.json(await markAllNotificationsRead(req.user!.id)); });
+router.post("/:id/read", async (req: AuthRequest, res) => { empty.parse(req.body); res.json(await markNotificationRead(z.string().min(1).max(250).parse(req.params.id), req.user!.id)); });
+export default router;

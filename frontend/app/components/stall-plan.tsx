@@ -8,6 +8,7 @@ export function StallPlan({ plan, selected, onSelect }: { plan: FloorPlan; selec
   const rows = Array.from({ length: Math.max(-1, ...plan.stalls.map(s => s.rowOrder)) + 1 }, (_, i) => i);
   const columns = Math.max(1, ...plan.stalls.map(s => s.column));
   return <div className="plan-card live-map">
+    {plan.marketOpen === false && <p className="form-alert" role="status">{plan.closedReason || "ตลาดปิดในวันที่เลือก"}</p>}
     <div className="map-controls">
       <div className="zoom-control"><button disabled={zoom <= 80} onClick={() => setZoom(v => v - 10)} aria-label="ย่อผัง"><Icon name="minus"/></button><span>{zoom}%</span><button disabled={zoom >= 150} onClick={() => setZoom(v => v + 10)} aria-label="ขยายผัง"><Icon name="plus"/></button></div>
       <div className="legend">{(Object.keys(statusLabels) as Array<keyof typeof statusLabels>).map(status => <span key={status}><i className={status + "-dot"}/>{statusLabels[status]}</span>)}</div>
@@ -20,7 +21,7 @@ export function StallPlan({ plan, selected, onSelect }: { plan: FloorPlan; selec
             <span className="row-label">{stalls[0]?.row ?? "·"}</span>
             {stalls.map(stall => <button key={stall.id} style={{ gridColumn: stall.column + 1 }}
               className={`slot ${stall.status}${selected === stall.id ? " selected" : ""}`}
-              aria-label={`ล็อก ${stall.code} ${statusLabels[stall.status]}`} aria-pressed={selected === stall.id}
+              aria-label={`ล็อก ${stall.code} ${statusLabels[stall.status]}${stall.unavailableReason ? " " + stall.unavailableReason : ""}`} aria-pressed={selected === stall.id}
               onClick={() => onSelect(stall.id)}>
               {selected === stall.id && <Icon name="check"/>}<strong>{stall.code}</strong><small>{statusLabels[stall.status]}</small>
             </button>)}

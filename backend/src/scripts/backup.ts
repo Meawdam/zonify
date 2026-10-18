@@ -8,7 +8,7 @@ import { pathToFileURL, fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
 import { z } from "zod";
 
-const names = ["users", "markets", "categories", "zones", "stalls", "stalldaystates", "shops", "shopphotos", "bookings", "paymentslips", "advertisements"] as const;
+const names = ["users", "markets", "categories", "zones", "stalls", "stalldaystates", "shops", "shopphotos", "bookings", "paymentslips", "advertisements", "marketschedules", "notifications"] as const;
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const dbName = z.string().regex(/^[a-zA-Z0-9_-]{1,63}$/);
 const manifestSchema = z.object({

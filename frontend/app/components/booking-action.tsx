@@ -28,6 +28,7 @@ export function BookingAction({ stall, marketId, date, loggedIn, refresh }: { st
     } finally { setBusy(false); }
   }
   return <div className="booking-action">
+    {stall.unavailableReason && <p className="form-alert" role="status">{stall.unavailableReason}</p>}
     {loggedIn && <div className="booking-shop-select"><label htmlFor={"booking-shop-" + stall.id}>จองให้ร้าน<select id={"booking-shop-" + stall.id} value={shopId} disabled={busy || !shops.data} onChange={e => setSelectedShop(e.target.value)}><option value="">เลือกร้านของคุณ</option>{eligible.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></label>{shops.error && <p role="alert">{shops.error} <button className="text-link" onClick={shops.retry}>โหลดร้านใหม่</button></p>}{shops.loading && !shops.data && <p role="status">กำลังโหลดร้าน…</p>}{shops.data && !eligible.length && <p>ยังไม่มีร้านที่เปิดใช้งานในตลาดนี้</p>}<Link className="text-link" href={"/merchant?" + new URLSearchParams({ market: marketId, returnTo: back })}>เพิ่มหรือจัดการร้าน</Link></div>}
     {error && <p className="form-alert" role="alert">{error}</p>}
     {!loggedIn && stall.status === "available" ? <Link className="button button-orange" href={"/login?next=" + encodeURIComponent(back)}>เข้าสู่ระบบเพื่อพักล็อก</Link> : <button className="button button-orange" disabled={!loggedIn || !shopId || busy || stall.status !== "available"} onClick={hold}>{busy ? "กำลังพักล็อก…" : stall.status === "available" ? "พักล็อกนี้ 10 นาที" : "ล็อกนี้ไม่ว่าง"}</button>}
