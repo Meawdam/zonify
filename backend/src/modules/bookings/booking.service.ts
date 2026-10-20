@@ -23,7 +23,7 @@ export function presentBooking(doc: object) {
     shop: row.shopSnapshot ?? null,
     createdAt: row.createdAt, updatedAt: row.updatedAt, expiresAt: row.expiresAt ?? null,
     cancelledAt: row.cancelledAt ?? null, cancelReason: row.cancelReason ?? "",
-    payment: { recipient: row.paymentRecipient ?? null, paidAt: row.paidAt ?? null,
+    payment: { simulated: (row.paymentRecipient as { id?: string } | null)?.id === "DEMO-NO-PAYMENT", recipient: row.paymentRecipient ?? null, paidAt: row.paidAt ?? null,
       approvedReference: row.approvedReference ?? null, refund: row.refund ?? null,
       attempts: attempts.map(a => ({ id: a.id, amount: a.amount, transferredAt: a.transferredAt,
         reference: a.submittedReference, submittedAt: a.submittedAt, status: a.status,

@@ -1,3 +1,4 @@
+import { requestJSON } from "./request";
 import { ApiError } from "./auth";
 export type AdminKind = "markets" | "categories" | "zones" | "stalls" | "shops" | "advertisements";
 type RowBase = { id: string; version: number };
@@ -43,8 +44,8 @@ export function defaults(kind: AdminKind, marketId: string) {
   return values;
 }
 export async function adminRequest<T>(path: string, method: string, body?: unknown): Promise<T> {
-  const response = await fetch("/api/admin" + path, { method, credentials: "same-origin", cache: "no-store", ...(body === undefined ? {} : { headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }) });
-  const data = await response.json().catch(() => null);
+  const { response, data } = await requestJSON("/api/admin" + path, { method, credentials: "same-origin", cache: "no-store", ...(body === undefined ? {} : { headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }) });
+
   if (!response.ok) {
     const fields: Record<string, string> = {};
     for (const issue of data?.errors ?? []) if (issue.path?.[0]) fields[String(issue.path[0])] = issue.message;

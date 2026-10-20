@@ -8,6 +8,7 @@ const reference = { type: "string", minLength: 4, maxLength: 80, pattern: "^[A-Z
 const bookingResponse = { 200: { description: "Updated booking including payment history", content: json(ref) }, ...errors };
 export const paymentSchemas = {
   BookingPayment: { type: "object", properties: {
+    simulated: { type: "boolean", description: "True for synthetic evidence in the isolated demo database" },
     recipient: { type: "object", nullable: true, properties: { id: { type: "string" }, name: { type: "string" } } },
     paidAt: { type: "string", format: "date-time", nullable: true }, approvedReference: { ...reference, nullable: true },
     refund: { type: "object", nullable: true, properties: { status: { type: "string", enum: ["pending", "refunded"] }, amount: { type: "number" }, reference,
@@ -18,9 +19,15 @@ export const paymentSchemas = {
   } },
 };
 export const paymentPaths = {
+  "/api/bookings/{id}/payment/demo-slip": { post: { summary: "Generate synthetic evidence in isolated demo mode only", security, parameters: id,
+    description: "404 outside demo mode. Requires an owned pending-payment booking with issued QR. Uses normal image validation, expiry, upload limits and review transitions. No bank transfer occurs.",
+    requestBody: body({ type: "object", additionalProperties: false }), responses: { 201: { description: "Synthetic slip awaiting manager review", content: json(ref) }, ...errors } } },
+  "/api/demo/reset": { post: { summary: "Reset isolated demo data (demo owner only)", security,
+    description: "404 outside demo mode. Drains API/background work, restores all sample records in zonify_demo only and revokes every demo session. No request body required.",
+    responses: { 200: { description: "Reset completed; sign in again", content: json({ type: "object", properties: { ok: { type: "boolean" }, message: { type: "string" } } }) }, ...errors } } },
   "/api/bookings/{id}/payment/qr": { post: { summary: "Create owned pending-payment PromptPay QR", security, parameters: id,
-    description: "Price comes from the booking snapshot. Recipient is fixed on first QR issuance. Blank/invalid environment configuration returns 503. Does not extend the payment deadline or assert payment received. Positive amounts with two decimal places only.",
-    requestBody: body({ type: "object", additionalProperties: false }), responses: { 200: { description: "THB QR", content: json({ type: "object", properties: { bookingId: { type: "string" }, amount: { type: "number" }, currency: { type: "string", enum: ["THB"] },
+    description: "Price comes from the booking snapshot. Recipient is fixed on first QR issuance. Blank/invalid environment configuration returns 503 in normal mode. Demo mode returns a non-bank ZONIFY-DEMO payload and simulated=true. Does not extend the payment deadline or assert payment received. Positive amounts with two decimal places only.",
+    requestBody: body({ type: "object", additionalProperties: false }), responses: { 200: { description: "THB QR", content: json({ type: "object", properties: { bookingId: { type: "string" }, amount: { type: "number" }, simulated: { type: "boolean" }, currency: { type: "string", enum: ["THB"] },
       recipient: { type: "object", properties: { id: { type: "string" }, name: { type: "string" } } }, expiresAt: { type: "string", format: "date-time" }, payload: { type: "string" }, qrDataUrl: { type: "string" } } }) }, ...errors } } },
   "/api/bookings/{id}/payment/slip": { post: { summary: "Upload one owned payment slip", security, parameters: id,
     description: "QR must have been issued. Exactly one PNG/JPEG up to 5 MB, decoded below 20 million pixels, stripped/reencoded as JPEG. Three fields only. At most 10 attempts per booking. One concurrent upload wins; state becomes payment_review, with no automatic expiry during manual review. This is not bank verification.",

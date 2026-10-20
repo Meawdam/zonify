@@ -8,7 +8,7 @@ import { bookingRequest, bookingTime, type Booking, type BookingStatus } from ".
 import { thaiTransferISO } from "../lib/payment-time";
 import { fieldAccessibility } from "../lib/form-fields";
 function FieldError({ id, message }: { id: string; message?: string }) { return message ? <small id={id + "-error"} className="field-error">{message}</small> : null; }
-type PaymentQR = { amount: number; recipient: { id: string; name: string }; expiresAt: string; qrDataUrl: string };
+type PaymentQR = { simulated?: boolean; amount: number; recipient: { id: string; name: string }; expiresAt: string; qrDataUrl: string };
 export function PaymentPanel({ booking, manager = false, expired = false, refresh, onNotice }: {
   booking: Booking; manager?: boolean; expired?: boolean; refresh: () => void; onNotice?: (message: string) => void;
 }) {
@@ -52,23 +52,27 @@ export function PaymentPanel({ booking, manager = false, expired = false, refres
   }
   const suffix = booking.id, activeQR = qr?.expiresAt === booking.expiresAt ? qr : null;
   return <section ref={panelRef} className="payment-panel" aria-label="ข้อมูลชำระเงิน" aria-busy={busy}>
+    {booking.payment.simulated && <p className="form-notice" role="note">รายการจำลอง · ไม่มีการโอนหรือรับเงินจริง การอนุมัติและคืนเงินใช้เพื่อสาธิตเท่านั้น</p>}
     {error && <p ref={errorRef} tabIndex={-1} className="form-alert" role="alert">{error}</p>}{notice?.status === booking.status && <p className="form-notice" role="status">{notice.message}</p>}
     {booking.payment.paidAt && <p className="form-notice">ผู้จัดการตรวจรับ {baht(booking.price)} บาท • {bookingTime(booking.payment.paidAt)}<br/>เลขอ้างอิง {booking.payment.approvedReference}</p>}
     {!manager && booking.status === "pending_payment" && !expired && <>
       <h3>ชำระค่าเช่า {baht(booking.price)} บาท</h3>
-      <p className="form-description">ตรวจชื่อบัญชีผู้รับและยอดในแอปธนาคารก่อนโอน จากนั้นส่งสลิปภายในเวลาที่เหลือ การส่งสลิปยังไม่ถือว่ารับชำระเงิน</p>
+      <p className="form-description">{booking.payment.simulated ? "เปิด QR จำลอง แล้วสร้างหลักฐานเพื่อทดลองขั้นตอนตรวจสอบ" : "ตรวจชื่อบัญชีผู้รับและยอดในแอปธนาคารก่อนโอน จากนั้นส่งสลิปภายในเวลาที่เหลือ การส่งสลิปยังไม่ถือว่ารับชำระเงิน"}</p>
       {latest?.status === "rejected" && <p className="form-alert">สลิปไม่ผ่าน: {latest.reviewReason}<br/>หากโอนแล้ว อย่าโอนซ้ำ ให้แก้ข้อมูลหรือส่งหลักฐานที่ถูกต้อง หรือติดต่อผู้จัดการ</p>}
       {!activeQR ? <button className="button button-green" disabled={busy} onClick={() => perform(async () => {
         setQR(await bookingRequest<PaymentQR>("/bookings/" + booking.id + "/payment/qr", {})); refresh();
       })}>{busy ? "กำลังโหลด…" : "แสดง QR ชำระเงิน"}</button> : <>
         <div className="payment-qr"><Image src={activeQR.qrDataUrl} width={320} height={320} alt={"QR PromptPay ยอด " + baht(activeQR.amount) + " บาท"} unoptimized/><p><strong>{activeQR.recipient.name}</strong><br/>พร้อมเพย์ {activeQR.recipient.id}<br/>{baht(activeQR.amount)} บาท</p><a className="text-link" href={activeQR.qrDataUrl} download={"zonify-" + booking.id + ".png"}>บันทึกภาพ QR</a></div>
-        <form className="payment-form" onSubmit={upload} ref={formRef}><fieldset disabled={busy}><legend>ส่งหลักฐานการโอน</legend>
+        {activeQR.simulated ? <div className="demo-payment-actions"><p>QR นี้เป็นข้อมูลจำลองสำหรับสาธิต ไม่ใช้ชำระเงินผ่านธนาคาร</p><button className="button button-orange" disabled={busy} onClick={() => perform(async () => {
+          const updated = await bookingRequest<Booking>("/bookings/" + booking.id + "/payment/demo-slip", {});
+          success("ส่งสลิปจำลองแล้ว รอผู้จัดการตรวจสอบ", updated.status);
+        })}>{busy ? "กำลังสร้างหลักฐาน…" : "สร้างและส่งสลิปจำลอง"}</button></div> : <form className="payment-form" onSubmit={upload} ref={formRef}><fieldset disabled={busy}><legend>ส่งหลักฐานการโอน</legend>
           <label htmlFor={"slip-" + suffix}>ภาพสลิป</label><input id={"slip-" + suffix} name="slip" type="file" accept="image/png,image/jpeg" required {...fieldAccessibility("slip-" + suffix, fields.slip, true)}/><small id={"slip-" + suffix + "-hint"}>PNG/JPEG ไม่เกิน 5 MB</small><FieldError id={"slip-" + suffix} message={fields.slip}/>
           <label htmlFor={"amount-" + suffix}>ยอดที่โอน (บาท)</label><input id={"amount-" + suffix} name="amount" type="number" min="0.01" max="9999999.99" step="0.01" defaultValue={booking.price.toFixed(2)} required {...fieldAccessibility("amount-" + suffix, fields.amount)}/><FieldError id={"amount-" + suffix} message={fields.amount}/>
           <label htmlFor={"time-" + suffix}>วันและเวลาโอนตามเวลาไทย</label><input id={"time-" + suffix} name="transferredAt" type="datetime-local" required {...fieldAccessibility("time-" + suffix, fields.transferredAt, true)}/><small id={"time-" + suffix + "-hint"}>เวลาไทย (Asia/Bangkok, UTC+07:00) แม้อุปกรณ์ใช้เขตเวลาอื่น</small><FieldError id={"time-" + suffix} message={fields.transferredAt}/>
           <label htmlFor={"reference-" + suffix}>เลขอ้างอิงการโอน</label><input id={"reference-" + suffix} name="reference" minLength={4} maxLength={80} pattern="(?:[A-Za-z0-9]|-)+" required {...fieldAccessibility("reference-" + suffix, fields.reference, true)}/><small id={"reference-" + suffix + "-hint"}>ตัวอักษรอังกฤษ ตัวเลข หรือขีดกลาง 4–80 ตัว</small><FieldError id={"reference-" + suffix} message={fields.reference}/>
           <button className="button button-orange" type="submit">{busy ? "กำลังส่งสลิป…" : "ส่งสลิปให้ตรวจสอบ"}</button>
-        </fieldset></form>
+        </fieldset></form>}
       </>}
     </>}
     {booking.status === "payment_review" && <p className="form-description">รอผู้จัดการตรวจสลิป ล็อกยังคงสงวนไว้ระหว่างตรวจสอบ โปรดอย่าโอนซ้ำ</p>}
@@ -82,9 +86,9 @@ export function PaymentPanel({ booking, manager = false, expired = false, refres
       <button className="button button-green" disabled={busy} onClick={() => setShowReview(v => !v)}>ตรวจรับ / ปฏิเสธสลิป</button>
       {showReview && <div className="payment-review-forms">
         <form className="payment-form" onSubmit={review}><fieldset disabled={busy}><legend>ตรวจรับชำระเงิน</legend><input type="hidden" name="decision" value="approve"/>
-          <p className="form-description">ตรวจเงินเข้าบัญชีผู้รับ ยอด {baht(booking.price)} บาท เวลาโอน และเลขอ้างอิงกับธนาคาร ระบบไม่ได้ตรวจธนาคารอัตโนมัติ</p>
-          <label htmlFor={"verified-" + suffix}>เลขอ้างอิงที่ตรวจจากธนาคาร</label><input id={"verified-" + suffix} name="verifiedReference" minLength={4} maxLength={80} pattern="(?:[A-Za-z0-9]|-)+" required {...fieldAccessibility("verified-" + suffix, fields.verifiedReference)}/><FieldError id={"verified-" + suffix} message={fields.verifiedReference}/>
-          <label className="payment-check"><input type="checkbox" required/>ตรวจชื่อบัญชี ยอด เวลาโอน และเงินเข้าแล้ว</label><button className="button button-green" type="submit">{busy ? "กำลังบันทึก…" : "ยืนยันรับชำระเงิน"}</button>
+          <p className="form-description">{booking.payment.simulated ? "ตรวจหลักฐานจำลอง ยอดและเลขอ้างอิงเพื่อสาธิตการอนุมัติ ไม่มีการรับเงินจริง" : <>ตรวจเงินเข้าบัญชีผู้รับ ยอด {baht(booking.price)} บาท เวลาโอน และเลขอ้างอิงกับธนาคาร ระบบไม่ได้ตรวจธนาคารอัตโนมัติ</>}</p>
+          <label htmlFor={"verified-" + suffix}>{booking.payment.simulated ? "เลขอ้างอิงหลักฐานจำลอง" : "เลขอ้างอิงที่ตรวจจากธนาคาร"}</label><input id={"verified-" + suffix} name="verifiedReference" defaultValue={booking.payment.simulated ? latest.reference : ""} minLength={4} maxLength={80} pattern="(?:[A-Za-z0-9]|-)+" required {...fieldAccessibility("verified-" + suffix, fields.verifiedReference)}/><FieldError id={"verified-" + suffix} message={fields.verifiedReference}/>
+          <label className="payment-check"><input type="checkbox" required/>{booking.payment.simulated ? "ตรวจข้อมูลจำลองแล้ว" : "ตรวจชื่อบัญชี ยอด เวลาโอน และเงินเข้าแล้ว"}</label><button className="button button-green" type="submit">{busy ? "กำลังบันทึก…" : "ยืนยันรับชำระเงิน"}</button>
         </fieldset></form>
         <form className="payment-form" onSubmit={review}><fieldset disabled={busy}><legend>ปฏิเสธหลักฐาน</legend><input type="hidden" name="decision" value="reject"/>
           <label htmlFor={"reject-" + suffix}>เหตุผลที่สลิปไม่ผ่าน</label><textarea id={"reject-" + suffix} name="reason" required maxLength={500} {...fieldAccessibility("reject-" + suffix, fields.reason)}/><FieldError id={"reject-" + suffix} message={fields.reason}/>
@@ -94,9 +98,9 @@ export function PaymentPanel({ booking, manager = false, expired = false, refres
     </>}
     {booking.payment.refund && <div className="payment-refund"><h3>{booking.payment.refund.status === "pending" ? "รอผู้จัดการคืนเงิน" : "บันทึกคืนเงินแล้ว"} {baht(booking.payment.refund.amount)} บาท</h3>
       {booking.payment.refund.status === "refunded" ? <p>เลขอ้างอิง {booking.payment.refund.reference} • {bookingTime(booking.payment.refund.completedAt!)}</p> : <p className="form-description">ยกเลิกพื้นที่แล้ว แต่ยังไม่มีบันทึกว่าคืนเงิน โปรดติดต่อผู้จัดการ</p>}
-      {manager && booking.payment.refund.status === "pending" && <form className="payment-form" onSubmit={e => { e.preventDefault(); const form = new FormData(e.currentTarget); void perform(async () => { const updated = await bookingRequest<Booking>("/admin/bookings/" + booking.id + "/payment/refund", { reference: form.get("reference") }); success("บันทึกคืนเงินแล้ว", updated.status); }); }}><fieldset disabled={busy}><legend>บันทึกหลังโอนคืนเงินจริง</legend>
+      {manager && booking.payment.refund.status === "pending" && <form className="payment-form" onSubmit={e => { e.preventDefault(); const form = new FormData(e.currentTarget); void perform(async () => { const updated = await bookingRequest<Booking>("/admin/bookings/" + booking.id + "/payment/refund", { reference: form.get("reference") }); success("บันทึกคืนเงินแล้ว", updated.status); }); }}><fieldset disabled={busy}><legend>{booking.payment.simulated ? "บันทึกการคืนเงินจำลอง" : "บันทึกหลังโอนคืนเงินจริง"}</legend>
         <label htmlFor={"refund-" + suffix}>เลขอ้างอิงการคืนเงิน</label><input id={"refund-" + suffix} name="reference" required minLength={4} maxLength={80} pattern="(?:[A-Za-z0-9]|-)+" {...fieldAccessibility("refund-" + suffix, fields.reference)}/><FieldError id={"refund-" + suffix} message={fields.reference}/>
-        <label className="payment-check"><input type="checkbox" required/>โอนคืนเงินให้ลูกค้าแล้ว</label><button type="submit" className="button button-green">บันทึกคืนเงิน</button>
+        <label className="payment-check"><input type="checkbox" required/>{booking.payment.simulated ? "ยืนยันการคืนเงินจำลอง" : "โอนคืนเงินให้ลูกค้าแล้ว"}</label><button type="submit" className="button button-green">บันทึกคืนเงิน</button>
       </fieldset></form>}
     </div>}
   </section>;

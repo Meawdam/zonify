@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { requestJSON } from "./request";
 type Result<T> = { key: string; sourceUrl: string; data: T | null; error: string; pending: boolean; status: number };
 export type InitialData<T> = { url: string; data: T; fetchedAt: number };
 // State belongs to this hook instance, never a shared cache of account data.
@@ -21,9 +22,9 @@ export function usePublicData<T>(url: string | null, pollMs = 0, keepPrevious = 
       setResult(previous => ({ key, sourceUrl, data: keepPrevious && previous?.sourceUrl === sourceUrl ? previous.data : null, error: "", pending: true, status: 0 }));
       let status = 0;
       try {
-        const response = await fetch(sourceUrl, { signal: controller.signal, credentials: "same-origin", cache: "no-store" });
+        const { response, data } = await requestJSON(sourceUrl, { signal: controller.signal, credentials: "same-origin", cache: "no-store" }, 10000);
         status = response.status;
-        const data = await response.json().catch(() => null);
+
         if (!response.ok) throw new Error(data?.message ?? "โหลดข้อมูลไม่สำเร็จ");
         if (!controller.signal.aborted) setResult({ key, sourceUrl, data: data as T, error: "", pending: false, status });
       } catch (error) {

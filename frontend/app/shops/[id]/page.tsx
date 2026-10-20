@@ -14,7 +14,7 @@ export default async function ShopPage({ params, searchParams }: { params: Promi
   const date = typeof query.date === "string" && validDate(query.date) ? query.date : "";
   if (!/^[a-zA-Z0-9][a-zA-Z0-9-]{0,79}$/.test(id)) notFound();
   const [response, user] = await Promise.all([
-    fetch(`${process.env.BACKEND_URL ?? "http://localhost:4000"}/api/shops/${encodeURIComponent(id)}${date ? "?date=" + date : ""}`, { cache: "no-store" }),
+    fetch(`${process.env.BACKEND_URL ?? "http://localhost:4000"}/api/shops/${encodeURIComponent(id)}${date ? "?date=" + date : ""}`, { cache: "no-store", signal: AbortSignal.timeout(5000) }),
     currentUser(),
   ]);
   if (response.status === 404) notFound();

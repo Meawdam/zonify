@@ -1,4 +1,5 @@
 import express from "express";
+import { demoRouter } from "./modules/demo/demo.route.js";
 import mongoose from "mongoose";
 
 import { swaggerCustomCss } from "./config/swagger-theme.js";
@@ -25,6 +26,7 @@ const app = express();
 app.disable("x-powered-by");
 app.use("/api", requireOrigin);
 app.use(express.json({ limit: "16kb" }));
+app.use("/api", demoRouter);
 
 app.get("/health", (req, res) => {
   const ready = mongoose.connection.readyState === 1;

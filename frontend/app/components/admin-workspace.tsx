@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useState } from "react";
 import type { User } from "../lib/auth";
-import { adminLabels, type AdminKind, type AdminReferences } from "../lib/admin";
+import { type AdminKind, type AdminReferences } from "../lib/admin";
 import { usePublicData } from "../lib/use-public-data";
 import { ResourcePanel } from "./admin-catalog";
 import { FloorEditor } from "./admin-floor";
@@ -15,6 +15,11 @@ import { AdminWorkQueue } from "./admin-work-queue";
 import { Dashboard, Reports } from "./report-workspace";
 
 type WorkspaceTab = AdminKind | "floor" | "users" | "bookings" | "holds" | "payments" | "dashboard" | "reports" | "schedule" | "queue";
+const navigationGroups: { label: string; items: [WorkspaceTab, string][] }[] = [
+  { label: "งานประจำวัน", items: [["queue", "งานที่ต้องดำเนินการ"], ["payments", "ตรวจชำระเงิน"], ["bookings", "รายการจอง"], ["holds", "พักล็อก"]] },
+  { label: "พื้นที่และร้านค้า", items: [["schedule", "ปฏิทินและปิดล็อก"], ["floor", "จัดผังล็อก"], ["shops", "ร้านค้า"], ["stalls", "ล็อก"], ["zones", "โซน"]] },
+  { label: "ภาพรวมและตั้งค่า", items: [["dashboard", "Dashboard"], ["reports", "รายงาน"], ["markets", "ตลาด"], ["categories", "หมวดหมู่"], ["advertisements", "โฆษณา"], ["users", "ผู้ใช้"]] },
+];
 export function AdminWorkspace({ user, today }: { user: User; today: string }) {
   const { params, update } = useURLState();
   const requested = adminSection(params.get("section"));
@@ -33,12 +38,9 @@ export function AdminWorkspace({ user, today }: { user: User; today: string }) {
   return <div className="admin-workspace">
     <div className="admin-navigation">
     <label className="admin-section-picker">ส่วนจัดการ<select value={tab} onChange={e => { setTab(e.target.value as WorkspaceTab); setNotice(""); }}>
-      {Object.entries(adminLabels).map(([kind, label]) => <option key={kind} value={kind}>{label}</option>)}
-      <option value="schedule">ปฏิทินและปิดล็อก</option><option value="queue">งานที่ต้องดำเนินการ</option><option value="floor">จัดผังล็อก</option><option value="users">ผู้ใช้</option><option value="bookings">รายการจอง</option><option value="holds">พักล็อก</option><option value="payments">ตรวจชำระเงิน</option><option value="dashboard">Dashboard</option><option value="reports">รายงาน</option>
+      {navigationGroups.map(group => <optgroup key={group.label} label={group.label}>{group.items.map(([key, label]) => <option key={key} value={key}>{label}</option>)}</optgroup>)}
     </select></label>
-    <nav className="admin-tabs" aria-label="เมนูจัดการ">{(Object.keys(adminLabels) as AdminKind[]).map(kind => <button key={kind} aria-current={tab === kind ? "page" : undefined} onClick={() => { setTab(kind); setNotice(""); }}>{adminLabels[kind]}</button>)}<button aria-current={tab === "floor" ? "page" : undefined} onClick={() => { setTab("floor"); setNotice(""); }}>จัดผังล็อก</button><button aria-current={tab === "users" ? "page" : undefined} onClick={() => { setTab("users"); setNotice(""); }}>ผู้ใช้</button></nav>
-    <nav className="admin-tabs" aria-label="เมนูรายการจอง"><button aria-current={tab === "bookings" ? "page" : undefined} onClick={() => { setTab("bookings"); setNotice(""); }}>รายการจอง</button><button aria-current={tab === "holds" ? "page" : undefined} onClick={() => { setTab("holds"); setNotice(""); }}>พักล็อก</button><button aria-current={tab === "payments" ? "page" : undefined} onClick={() => { setTab("payments"); setNotice(""); }}>ตรวจชำระเงิน</button></nav>
-    <nav className="admin-tabs" aria-label="เมนูสรุปผล"><button aria-current={tab === "schedule" ? "page" : undefined} onClick={() => setTab("schedule")}>ปฏิทินและปิดล็อก</button><button aria-current={tab === "queue" ? "page" : undefined} onClick={() => setTab("queue")}>งานที่ต้องดำเนินการ</button><button aria-current={tab === "dashboard" ? "page" : undefined} onClick={() => { setTab("dashboard"); setNotice(""); }}>Dashboard</button><button aria-current={tab === "reports" ? "page" : undefined} onClick={() => { setTab("reports"); setNotice(""); }}>รายงาน</button></nav>
+    {navigationGroups.map(group => <div className="admin-nav-group" key={group.label}><p>{group.label}</p><nav className="admin-tabs" aria-label={group.label}>{group.items.map(([key, label]) => <button key={key} aria-current={tab === key ? "page" : undefined} onClick={() => { setTab(key); setNotice(""); }}>{label}</button>)}</nav></div>)}
     </div>
     {dirtySection && requested !== dirtySection && <p className="form-alert" role="status">ยังเก็บแบบฟอร์มที่ไม่บันทึกไว้ในส่วนเดิม บันทึกหรือปิดแบบฟอร์มก่อนเปิดส่วนที่เลือกจากประวัติ URL</p>}
     <DataWarning error={refs.refreshError} retry={refs.retry}/>

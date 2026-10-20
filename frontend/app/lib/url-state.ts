@@ -1,6 +1,6 @@
 export const adminSections = ["markets", "categories", "zones", "stalls", "shops", "advertisements", "floor", "users", "bookings", "holds", "payments", "dashboard", "reports", "schedule", "queue"] as const;
 export type AdminSection = typeof adminSections[number];
-export const adminSection = (value: string | null) => adminSections.find(section => section === value) ?? "markets";
+export const adminSection = (value: string | null) => adminSections.find(section => section === value) ?? "queue";
 export const resourceId = (value: string | null | undefined) => value && /^[a-zA-Z0-9][a-zA-Z0-9-]{0,79}$/.test(value) ? value : "";
 export const pageNumber = (value: string | null) => value && /^[1-9]\d{0,4}$/.test(value) && Number(value) <= 10000 ? Number(value) : 1;
 export function shopFilters(params: Pick<URLSearchParams, "get">) {

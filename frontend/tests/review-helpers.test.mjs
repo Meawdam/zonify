@@ -23,7 +23,8 @@ test('URL values have bounded validated fallbacks', () => {
   assert.equal(resourceId('qa-market'), 'qa-market');
   assert.equal(resourceId('../../admin'), '');
   assert.equal(adminSection('payments'), 'payments');
-  assert.equal(adminSection('invalid'), 'markets');
+  assert.equal(adminSection('invalid'), 'queue');
+  assert.equal(adminSection(null), 'queue');
 });
 test('shop return links preserve independent floor context and reject external redirects', () => {
   const params = new URLSearchParams('market=qa-market&stall=qa-stall-0&date=2026-10-16&shopMarket=qa-market&q=กาแฟ&category=qa-category&page=2');

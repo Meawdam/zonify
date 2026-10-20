@@ -1,3 +1,4 @@
+import { requestJSON, RequestTimeoutError } from "./request";
 import { ApiError, type User } from "./auth";
 export const bookingStatusLabels = { held: "พักล็อก", pending_payment: "รอชำระเงิน", payment_review: "รอตรวจสอบสลิป", confirmed: "ยืนยันแล้ว", cancelled: "ยกเลิกแล้ว", expired: "หมดอายุ" };
 export type BookingStatus = keyof typeof bookingStatusLabels;
@@ -8,15 +9,16 @@ export type Booking = {
   shop?: { id: string; name: string; categoryId: string; phone: string; contactUrl: string } | null;
   expiresAt: string | null; cancelledAt: string | null; cancelReason: string;
   customer: User; stall: { id: string; marketId: string; code: string; width: number; depth: number; marketName: string; zoneName: string };
-  payment: { recipient: { id: string; name: string } | null; paidAt: string | null; approvedReference: string | null;
+  payment: { simulated?: boolean; recipient: { id: string; name: string } | null; paidAt: string | null; approvedReference: string | null;
     attempts: PaymentAttempt[]; refund: { status: "pending" | "refunded"; amount: number; reference: string; completedAt: string | null } | null };
 };
 export type BookingResults = { items: Booking[]; total: number; page: number; pages: number };
 export async function bookingRequest<T>(path: string, body: unknown): Promise<T> {
-  let response: Response;
-  try { response = await fetch("/api" + path, { method: "POST", credentials: "same-origin", cache: "no-store", ...(body instanceof FormData ? { body } : { headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }) }); }
-  catch { throw new ApiError(0, "NETWORK_ERROR", "เชื่อมต่อระบบไม่ได้ กรุณาลองใหม่"); }
-  const data = await response.json().catch(() => null);
+  let result: Awaited<ReturnType<typeof requestJSON>>;
+  try { result = await requestJSON("/api" + path, { method: "POST", credentials: "same-origin", cache: "no-store", ...(body instanceof FormData ? { body } : { headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }) }); }
+  catch (error) { if (error instanceof RequestTimeoutError) throw new ApiError(0, "REQUEST_TIMEOUT", error.message); throw new ApiError(0, "NETWORK_ERROR", "เชื่อมต่อระบบไม่ได้ กรุณาลองใหม่"); }
+
+  const { response, data } = result;
   if (!response.ok) {
     const fields: Record<string, string> = {};
     for (const issue of data?.errors ?? []) if (issue.path?.[0]) fields[String(issue.path[0])] = issue.message;

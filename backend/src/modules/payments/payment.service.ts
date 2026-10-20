@@ -12,6 +12,7 @@ import type { z } from "zod";
 import type { slipDto, reviewDto } from "./payment.dto.js";
 export const MAX_SLIP_BYTES = 5 * 1024 * 1024;
 export function promptPayConfig() {
+  if (env.DEMO_MODE) return { id: "DEMO-NO-PAYMENT", name: "บัญชีจำลอง — ห้ามโอนเงินจริง" };
   if (!env.PROMPTPAY_ID || !env.PROMPTPAY_NAME) throw new HttpError(503, "PAYMENT_NOT_CONFIGURED", "ยังไม่ได้กำหนดบัญชีรับชำระเงิน กรุณาติดต่อผู้จัดการ");
   if (!/^(0\d{9}|\d{13})$/.test(env.PROMPTPAY_ID) || env.PROMPTPAY_NAME.length > 150)
     throw new HttpError(503, "PAYMENT_CONFIG_INVALID", "บัญชีรับชำระเงินตั้งค่าไม่ถูกต้อง กรุณาติดต่อผู้จัดการ");
@@ -39,9 +40,18 @@ export async function paymentQR(id: string, userId: string, now = new Date()) {
     row = updated ?? await ownBooking(id, userId);
     if (!row.paymentRecipient || row.status !== "pending_payment") throw new HttpError(409, "BOOKING_CHANGED", "สถานะรายการเปลี่ยนแล้ว กรุณาโหลดใหม่");
   }
-  const payload = generatePayload(row.paymentRecipient.id!, { amount });
-  return { bookingId: id, amount, currency: "THB", recipient: row.paymentRecipient,
+  const payload = env.DEMO_MODE ? `ZONIFY-DEMO:${id}:NO-PAYMENT` : generatePayload(row.paymentRecipient.id!, { amount });
+  return { bookingId: id, amount, currency: "THB", simulated: env.DEMO_MODE, recipient: row.paymentRecipient,
     expiresAt: row.expiresAt, payload, qrDataUrl: await QRCode.toDataURL(payload, { width: 320, margin: 4, errorCorrectionLevel: "M" }) };
+}
+export async function submitDemoSlip(id: string, userId: string) {
+  if (!env.DEMO_MODE) throw new HttpError(404, "NOT_FOUND", "ไม่พบคำสั่งนี้");
+  const row = await ownBooking(id, userId);
+  const reference = ("DEMO-" + randomUUID()).toUpperCase();
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="480"><rect width="600" height="480" fill="#f8f7f2"/><g fill="#193c32" font-family="sans-serif" font-size="24"><text x="30" y="65">ZONIFY DEMO ONLY</text><text x="30" y="115">NO MONEY TRANSFERRED</text><text x="30" y="180">THB ${row.price.toFixed(2)}</text><text x="30" y="245" font-size="16">${reference}</text><text x="30" y="310">SYNTHETIC PAYMENT EVIDENCE</text></g></svg>`;
+  const buffer = await sharp(Buffer.from(svg)).png().toBuffer();
+  return submitSlip(id, userId, { buffer, mimetype: "image/png" } as Express.Multer.File,
+    { amount: row.price, transferredAt: new Date().toISOString(), reference });
 }
 async function prepareImage(file: Express.Multer.File) {
   if (!file.buffer.length || file.buffer.length > MAX_SLIP_BYTES) throw new HttpError(413, "SLIP_TOO_LARGE", "สลิปต้องมีขนาดไม่เกิน 5 MB");

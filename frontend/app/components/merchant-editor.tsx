@@ -27,7 +27,7 @@ export function MerchantEditor({ shop, markets, categories, initialMarket, onSav
     if (!saved) return;
     setBusy(true);
     try {
-      const response = await fetch(`/api/merchant/shops/${saved.id}`, { cache: "no-store", credentials: "same-origin" });
+      const response = await fetch(`/api/merchant/shops/${saved.id}`, { cache: "no-store", credentials: "same-origin", signal: AbortSignal.timeout(10000) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message ?? "โหลดข้อมูลล่าสุดไม่สำเร็จ");
       setLatest(data); setSaved(data); setConflict(false); setError("");

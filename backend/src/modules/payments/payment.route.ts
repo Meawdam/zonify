@@ -6,7 +6,7 @@ import { HttpError } from "../../middlewares/http-error.js";
 import { slug } from "../catalog/catalog.service.js";
 import { emptyDto } from "../bookings/booking.dto.js";
 import { slipDto, reviewDto, refundDto } from "./payment.dto.js";
-import { paymentQR, submitSlip, getSlip, reviewPayment, recordRefund, MAX_SLIP_BYTES } from "./payment.service.js";
+import { paymentQR, submitSlip, submitDemoSlip, getSlip, reviewPayment, recordRefund, MAX_SLIP_BYTES } from "./payment.service.js";
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: MAX_SLIP_BYTES, files: 1, fields: 3, parts: 4, fieldSize: 200 } }).single("slip");
 const uploadLimit = rateLimit({ windowMs: 15 * 60_000, limit: 30, standardHeaders: "draft-8", legacyHeaders: false,
   validate: { xForwardedForHeader: false }, message: { code: "RATE_LIMITED", message: "ส่งสลิปบ่อยเกินไป กรุณาลองใหม่ใน 15 นาที" } });
@@ -15,6 +15,10 @@ paymentRouter.use(authMiddleware);
 paymentRouter.use((_req, res, next) => { res.set("Cache-Control", "private, no-store"); next(); });
 paymentRouter.post("/:id/payment/qr", async (req: AuthRequest, res) => {
   emptyDto.parse(req.body); res.json(await paymentQR(slug.parse(req.params.id), req.user!.id));
+});
+paymentRouter.post("/:id/payment/demo-slip", uploadLimit, async (req: AuthRequest, res) => {
+  emptyDto.parse(req.body);
+  res.status(201).json(await submitDemoSlip(slug.parse(req.params.id), req.user!.id));
 });
 paymentRouter.post("/:id/payment/slip", uploadLimit, (req, res, next) => upload(req, res, error => {
   if (error instanceof multer.MulterError) return next(new HttpError(error.code === "LIMIT_FILE_SIZE" ? 413 : 400,

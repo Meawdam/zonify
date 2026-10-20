@@ -32,13 +32,13 @@ export function LandingPage({ user, initialDate, initialMarket, initialStall, in
     </div></header>
     <main>
       <section className="hero"><div className="container hero-grid">
-        <div className="hero-copy"><h1>ตลาดที่ใช่<br/><span>พื้นที่ของคุณ</span></h1><p>เลือกตลาด ดูผังล็อก และค้นหาร้านที่อยากแวะ</p>
-          <div className="hero-actions"><a href="#markets" className="button button-green">เริ่มเลือกตลาด <Icon/></a><a href="#how-it-works" className="text-link">ดูวิธีสำรวจ <Icon/></a></div>
+        <div className="hero-copy"><h1>ตลาดที่ใช่<br/><span>พื้นที่ของคุณ</span></h1><p>หาพื้นที่ขายของ ดูราคาและผังล็อกก่อนจอง หรือค้นหาร้านที่อยากแวะ</p>
+          <div className="hero-actions"><a href="#markets" className="button button-green">จองพื้นที่ขายของ <Icon/></a><a href="#shops" className="text-link">ค้นหาร้านค้า <Icon name="store"/></a></div><a href="#how-it-works" className="text-link booking-how-link">ดูขั้นตอนการจอง <Icon/></a>
         </div>
         <figure className="hero-media"><div className="hero-visual"><Image src="/images/zonify-editorial-hero.webp" alt="ภาพจำลองบรรยากาศตลาดริมคลองเชียงใหม่ยามเย็น" fill loading="eager" fetchPriority="high" sizes="(max-width: 800px) 100vw, 55vw"/></div><figcaption><span>บรรยากาศตลาดเชียงใหม่</span><a href="#floor-plan">สำรวจพื้นที่ <Icon/></a></figcaption></figure>
       </div>
-      <div id="how-it-works" className="container steps" aria-label="ขั้นตอนการสำรวจตลาด">
-        {[{ title: "เลือกตลาด", copy: "ค้นหาตลาดที่ตรงกับสไตล์ของคุณ", icon: "pin" as const }, { title: "ดูล็อกบนผัง", copy: "ดูตำแหน่ง ขนาด ราคา และสถานะ", icon: "grid" as const }, { title: "ค้นหาร้านค้า", copy: "ดูร้านที่สนใจและตำแหน่งบนผัง", icon: "store" as const }].map((step, index) => <div className="step" key={step.title}><div className="step-mark"><span className="step-number">0{index + 1}</span><span className="step-icon"><Icon name={step.icon}/></span></div><div><h2>{step.title}</h2><p>{step.copy}</p></div></div>)}
+      <div id="how-it-works" className="container steps" aria-label="ขั้นตอนการจองพื้นที่">
+        {[{ title: "เลือกตลาดและวันขาย", copy: "ดูผัง ขนาด ราคา และล็อกที่ว่าง", icon: "pin" as const }, { title: "เลือกร้านและพักล็อก", copy: "เข้าสู่ระบบ เพิ่มร้าน แล้วพักล็อก 10 นาที", icon: "grid" as const }, { title: "ส่งหลักฐานและรอยืนยัน", copy: "เข้าสู่ขั้นชำระเงิน ส่งสลิปภายใน 30 นาที แล้วรอผู้จัดการอนุมัติ", icon: "store" as const }].map((step, index) => <div className="step" key={step.title}><div className="step-mark"><span className="step-number">0{index + 1}</span><span className="step-icon"><Icon name={step.icon}/></span></div><div><h2>{step.title}</h2><p>{step.copy}</p></div></div>)}
       </div></section>
       <MarketExplorer initialDate={initialDate} initialMarket={initialMarket} initialStall={initialStall} initialData={initialData} loggedIn={!!user}/>
       <Advertisements/>
